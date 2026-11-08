@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+*.tgz
+.idea/
+*.iml
+demo/dist/
+demo/src/assets/app.bundle.js
+demo/src/assets/styles.css
+demo/src/assets/webawesome.css

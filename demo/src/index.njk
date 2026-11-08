@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en" class="wa-theme-default wa-palette-default wa-brand-blue wa-light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Interactive examples for the @lgs1920/autocomplete Web Component.">
+    <title>@lgs1920/autocomplete · Examples</title>
+    <link rel="stylesheet" href="./assets/webawesome.css">
+    <link rel="stylesheet" href="./assets/styles.css">
+</head>
+<body>
+<nav class="site-banner" aria-label="Site navigation">
+    <a class="site-title" href="./">LGS1920 / autocomplete</a>
+    <div class="site-links">
+        <a href="./" aria-current="page">Examples</a>
+        <a href="./docs/">Options and API</a>
+        <a href="https://github.com/lgs1920/autocomplete">GitHub</a>
+        <a href="https://www.npmjs.com/package/@lgs1920/autocomplete">npm</a>
+    </div>
+    <div class="theme-controls" aria-label="Web Awesome display settings">
+        <wa-select id="theme-control" label="Theme" label-at-start size="s" value="default">
+            <wa-option value="default">Default</wa-option>
+            <wa-option value="awesome">Awesome</wa-option>
+            <wa-option value="shoelace">Shoelace</wa-option>
+        </wa-select>
+        <wa-select id="mode-control" label="Mode" label-at-start size="s" value="light">
+            <wa-option value="light">Light</wa-option>
+            <wa-option value="dark">Dark</wa-option>
+        </wa-select>
+        <wa-select id="brand-control" label="Brand" label-at-start size="s" value="blue">
+            <wa-option value="blue">Blue</wa-option>
+            <wa-option value="red">Red</wa-option>
+            <wa-option value="orange">Orange</wa-option>
+            <wa-option value="green">Green</wa-option>
+            <wa-option value="purple">Purple</wa-option>
+        </wa-select>
+    </div>
+</nav>
+
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">@lgs1920/autocomplete · Web Awesome 3</p>
+        <h1>Search, choose, keep the real value</h1>
+        <p class="intro">A single-value autocomplete Web Component for short local lists and remote search. Its suggestions use Web Awesome icons and positioning, while the component owns keyboard navigation, filtering, selection, and request cleanup.</p>
+        <div class="inline-actions">
+            <wa-button href="./docs/" appearance="filled">Read the API</wa-button>
+            <wa-button href="https://github.com/lgs1920/autocomplete" appearance="outlined">View source</wa-button>
+        </div>
+    </header>
+
+    <section aria-labelledby="examples-heading">
+        <div class="page-heading">
+            <p class="eyebrow">Examples</p>
+            <h2 id="examples-heading">Try the component</h2>
+            <p class="section-intro">Type a few letters, move through results with the arrow keys, and press Enter to select. Each item can keep domain fields such as a department code alongside its value and label.</p>
+        </div>
+        <div class="demo-grid">
+            <article class="demo-card">
+                <p class="eyebrow">Local options · recent selections · icon at start</p>
+                <h3>Find a city</h3>
+                <lgs1920-autocomplete id="local-autocomplete" label="City" name="city" placeholder="Search Troyes, Reims, Lyon…"></lgs1920-autocomplete>
+                <p class="section-intro">The last three selections are saved in this browser and shown again when the field is empty.</p>
+                <div class="inline-actions">
+                    <wa-button appearance="outlined" size="s" data-clear="#local-autocomplete">Clear selection</wa-button>
+                </div>
+                <output id="local-autocomplete-selection" aria-live="polite">Nothing selected</output>
+            </article>
+
+            <article class="demo-card">
+                <p class="eyebrow">Local options · icon at end</p>
+                <h3>Choose another city</h3>
+                <lgs1920-autocomplete id="trailing-autocomplete" icon-position="end" label="City" placeholder="Search cities"></lgs1920-autocomplete>
+                <output id="trailing-autocomplete-selection" aria-live="polite">Nothing selected</output>
+            </article>
+
+            <article class="demo-card">
+                <p class="eyebrow">Asynchronous callback</p>
+                <h3>Search countries</h3>
+                <lgs1920-autocomplete id="remote-autocomplete" label="Country" min-chars="1" debounce="150" placeholder="Search countries"></lgs1920-autocomplete>
+                <p class="section-intro">This demo simulates a network request and cancels stale searches with the provided <code>AbortSignal</code>.</p>
+                <output id="remote-autocomplete-selection" aria-live="polite">Nothing selected</output>
+            </article>
+        </div>
+    </section>
+
+    <section class="content-card" aria-labelledby="quick-start-heading">
+        <p class="eyebrow">Quick start</p>
+        <h2 id="quick-start-heading">Pass an array or an async search function</h2>
+        <pre><code>import '@lgs1920/autocomplete'
+
+const field = document.querySelector('lgs1920-autocomplete')
+field.options = [
+  {value: 'troyes', label: 'Troyes', icon: 'location-dot', department: '10'},
+]
+field.persistence = {id: 'city-search', limit: 5}
+
+field.addEventListener('wa-select', event =&gt; {
+  console.log(event.detail.value, event.detail.option.department)
+})</code></pre>
+        <p>See the <a href="./docs/">full options and events reference</a> for the remote search contract, keyboard behavior, and icon formats.</p>
+    </section>
+</main>
+
+<footer class="site-footer">LGS1920 · MIT licensed · <a href="https://github.com/lgs1920/autocomplete">Source on GitHub</a></footer>
+<script type="module" src="./assets/app.bundle.js"></script>
+</body>
+</html>

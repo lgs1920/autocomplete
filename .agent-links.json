@@ -1,0 +1,13 @@
+{
+  "managedPaths": [
+    "PROJECT_RULES.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".lgs1920/guidance/PROJECT_RULES.common.md",
+    "skills",
+    "skills/lgs-1920-component-delivery",
+    ".agents/skills",
+    ".aiassistant/skills",
+    "agent/skills"
+  ]
+}

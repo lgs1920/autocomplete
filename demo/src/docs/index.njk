@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en" class="wa-theme-default wa-palette-default wa-brand-blue wa-light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Properties, events, and option format for @lgs1920/autocomplete.">
+    <title>@lgs1920/autocomplete · Options and API</title>
+    <link rel="stylesheet" href="../assets/webawesome.css">
+    <link rel="stylesheet" href="../assets/styles.css">
+</head>
+<body>
+<nav class="site-banner" aria-label="Site navigation">
+    <a class="site-title" href="../">LGS1920 / autocomplete</a>
+    <div class="site-links">
+        <a href="../">Examples</a>
+        <a href="./" aria-current="page">Options and API</a>
+        <a href="https://github.com/lgs1920/autocomplete">GitHub</a>
+        <a href="https://www.npmjs.com/package/@lgs1920/autocomplete">npm</a>
+    </div>
+</nav>
+
+<main>
+    <header class="page-heading">
+        <p class="eyebrow">Component reference</p>
+        <h1>Options and events</h1>
+        <p class="intro">The host provides the data and receives a selected option. The element owns the query, active suggestion, popup, and request lifecycle.</p>
+    </header>
+
+    <section class="content-card" aria-labelledby="option-shape-heading">
+        <h2 id="option-shape-heading">Option shape</h2>
+        <p>Every option needs a string or numeric <code>value</code> (or <code>valeur</code>) and a string <code>label</code>. Optional <code>icon</code> values use a Web Awesome icon name or an icon descriptor. Extra properties such as <code>variable</code> pass through unchanged as host metadata.</p>
+        <pre><code>{
+  value: 'troyes',
+  label: 'Troyes',
+  icon: 'location-dot',
+  department: '10',
+  region: 'Grand Est'
+}</code></pre>
+    </section>
+
+    <section class="content-card" aria-labelledby="properties-heading">
+        <h2 id="properties-heading">Properties and attributes</h2>
+        <table>
+            <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>options</code></td><td>Option[] property</td><td><code>[]</code></td><td>Local suggestions. Matching checks <code>label</code> and <code>value</code>, without case sensitivity.</td></tr>
+                <tr><td><code>searchOptions</code></td><td>Function property</td><td><code>null</code></td><td>Async provider <code>(query, {signal}) =&gt; Promise&lt;Option[]&gt;</code>. Setting it enables remote search.</td></tr>
+                <tr><td><code>persistence</code></td><td><code>{id, limit}</code> property</td><td><code>null</code></td><td>Saves the last selected options in browser storage under an id-specific key and displays them when the query is empty. <code>count</code> aliases <code>limit</code>.</td></tr>
+                <tr><td><code>value</code></td><td>String or number property</td><td>Empty</td><td>Raw selected value. Setting it selects a matching item from the current local <code>options</code>.</td></tr>
+                <tr><td><code>query</code></td><td>Read-only string property</td><td>Empty</td><td>Current text in the input, including while the user is typing an unselected query.</td></tr>
+                <tr><td><code>selectedOption</code></td><td>Read-only property</td><td><code>null</code></td><td>The full selected object, including host-owned metadata.</td></tr>
+                <tr><td><code>focus()</code></td><td>Method</td><td>—</td><td>Focus the underlying Web Awesome input.</td></tr>
+                <tr><td><code>label</code></td><td>String attribute/property</td><td>Empty</td><td>Accessible visible label forwarded to <code>wa-input</code>.</td></tr>
+                <tr><td><code>placeholder</code></td><td>String attribute/property</td><td>Empty</td><td>Hint displayed while the query is empty.</td></tr>
+                <tr><td><code>name</code></td><td>String attribute</td><td>Empty</td><td>Form field name for the selected raw value.</td></tr>
+                <tr><td><code>disabled</code></td><td>Boolean attribute/property</td><td>False</td><td>Disables the input and excludes its value from form submission.</td></tr>
+                <tr><td><code>icon-position</code></td><td><code>start</code> or <code>end</code></td><td><code>start</code></td><td>Places each option icon before or after its label.</td></tr>
+                <tr><td><code>min-chars</code></td><td>Number attribute/property</td><td><code>0</code></td><td>Minimum query length before invoking the async provider.</td></tr>
+                <tr><td><code>debounce</code></td><td>Milliseconds attribute/property</td><td><code>150</code></td><td>Delay before invoking the async provider.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="content-card" aria-labelledby="persistence-heading">
+        <h2 id="persistence-heading">Recent selections</h2>
+        <p>Use a stable, unique id for each independent history. The browser stores selected option objects as JSON in <code>localStorage</code>, and shows the last selected items whenever the query is empty. Only a user selection updates the history.</p>
+        <pre><code>field.persistence = {id: 'city-search', limit: 5}
+
+// The count alias is also accepted:
+field.persistence = {id: 'city-search', count: 5}</code></pre>
+        <p>Changing the id loads a separate history. Reducing the limit removes older entries; raising it later cannot restore removed entries. Browser storage or JSON serialization failures emit <code>wa-persistence-error</code> with <code>{error, action, id}</code>.</p>
+    </section>
+
+    <section class="content-card" aria-labelledby="styling-heading">
+        <h2 id="styling-heading">Styling</h2>
+        <table>
+            <thead><tr><th>CSS custom property</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+                <tr><td><code>--lgs1920-autocomplete-max-height</code></td><td><code>16rem</code></td><td>Maximum height of the suggestion panel.</td></tr>
+            </tbody>
+        </table>
+        <p>The component uses Web Awesome palette and spacing tokens so its input and suggestions follow the active theme.</p>
+    </section>
+
+    <section class="content-card" aria-labelledby="remote-heading">
+        <h2 id="remote-heading">Remote API example</h2>
+        <p>The callback receives an abort signal. Forward it to <code>fetch</code> so the browser can stop obsolete requests as the query changes.</p>
+        <pre><code>field.searchOptions = async (query, {signal}) =&gt; {
+  const response = await fetch(`/api/cities?q=${encodeURIComponent(query)}`, {signal})
+  if (!response.ok) throw new Error('City search failed')
+  return response.json()
+}</code></pre>
+        <p>The endpoint should return an array in the documented option shape. A failed request shows a status message and emits <code>wa-search-error</code>. The selected raw value participates in form submission and is cleared when the owning form resets.</p>
+    </section>
+
+    <section class="content-card" aria-labelledby="events-heading">
+        <h2 id="events-heading">Events</h2>
+        <table>
+            <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+            <tbody>
+                <tr><td><code>input</code></td><td>Native Web Awesome event</td><td>Whenever the user edits the query. Read its text from <code>event.target.query</code>.</td></tr>
+                <tr><td><code>change</code></td><td>Native Web Awesome event</td><td>When the user commits input or selects a suggestion. Read the raw selected value from <code>event.target.value</code>.</td></tr>
+                <tr><td><code>focus</code> / <code>blur</code></td><td>Native Web Awesome events</td><td>When the underlying input receives or loses focus.</td></tr>
+                <tr><td><code>wa-select</code></td><td><code>{option, value, label}</code></td><td>After a suggestion is selected.</td></tr>
+                <tr><td><code>wa-search-error</code></td><td><code>{error, query}</code></td><td>When a current async search fails.</td></tr>
+                <tr><td><code>wa-persistence-error</code></td><td><code>{error, action, id}</code></td><td>When browser storage cannot be read or written.</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="content-card" aria-labelledby="keyboard-heading">
+        <h2 id="keyboard-heading">Keyboard and accessibility</h2>
+        <table>
+            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+            <tbody>
+                <tr><td>Arrow Down / Arrow Up</td><td>Move the active suggestion, wrapping at either end.</td></tr>
+                <tr><td>Home / End</td><td>Move to the first or last visible suggestion.</td></tr>
+                <tr><td>Enter</td><td>Select the active suggestion.</td></tr>
+                <tr><td>Escape</td><td>Close the suggestion panel.</td></tr>
+                <tr><td>Tab</td><td>Continue normal focus navigation; the panel closes when focus leaves.</td></tr>
+            </tbody>
+        </table>
+    </section>
+</main>
+
+<footer class="site-footer"><a href="../">Back to examples</a> · LGS1920 · MIT licensed</footer>
+</body>
+</html>
