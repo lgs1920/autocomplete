@@ -2,6 +2,14 @@
   "name": "@lgs1920/autocomplete",
   "version": "0.1.0",
   "description": "An accessible autocomplete Web Component built with Web Awesome 3.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lgs1920/autocomplete.git"
+  },
+  "homepage": "https://github.com/lgs1920/autocomplete#readme",
+  "bugs": {
+    "url": "https://github.com/lgs1920/autocomplete/issues"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
