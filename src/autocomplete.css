@@ -26,10 +26,12 @@
 
 .input {
     inline-size: 100%;
+    /* Keep the placeholder visibly distinct from the disabled input state. */
+    --wa-form-control-placeholder-color: var(--wa-color-text-quiet);
 }
 
 .disclosure {
-    color: var(--wa-color-text-quiet);
+    color: var(--wa-color-text-normal);
 }
 
 .popup {

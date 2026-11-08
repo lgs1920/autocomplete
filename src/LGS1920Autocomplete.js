@@ -374,6 +374,24 @@ export class LGS1920Autocomplete extends HTMLElement {
     }
 
     /**
+     * Get whether the autocomplete is disabled.
+     *
+     * @returns {boolean} Whether the disabled attribute is present.
+     */
+    get disabled() {
+        return this.hasAttribute('disabled')
+    }
+
+    /**
+     * Set whether the autocomplete is disabled.
+     *
+     * @param {boolean} value - Whether to disable the autocomplete.
+     */
+    set disabled(value) {
+        this.toggleAttribute('disabled', Boolean(value))
+    }
+
+    /**
      * Get the accessible input label.
      *
      * @returns {string} Input label.
