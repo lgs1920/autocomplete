@@ -2,7 +2,7 @@
 
 An accessible autocomplete Web Component built with Web Awesome 3. It supports local option arrays, asynchronous search callbacks, optional Font Awesome icons, and host-owned metadata.
 
-The current release is `0.1.0`.
+The current release is `0.1.1`.
 
 ## Install
 
