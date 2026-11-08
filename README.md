@@ -67,3 +67,21 @@ bun run demo:serve
 ```
 
 The demo uses port `4177`.
+
+## Publish on npm
+
+The release script keeps the version in `package.json` and the current release shown above in sync:
+
+```sh
+# Preview the pending version or release notes without changing files
+bun run publish --preview
+
+# Publish the current unreleased version, or increment the patch version after a release
+bun run publish
+
+# Choose a minor or major version increment
+bun run publish --minor
+bun run publish --major
+```
+
+The script requires a clean `main` branch. It updates and commits the version when needed, creates an annotated version tag, and pushes the commit and tag to GitHub. The tag starts GitHub Actions, which verifies the package, publishes it to npm with the `NPM_TOKEN` repository secret, and creates a GitHub release.

@@ -1,0 +1,56 @@
+name: Publish autocomplete package
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Verify package
+        run: bun run verify
+      - name: Verify tag matches package version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          package_version=$(bun -p "require('./package.json').version")
+          tag_version="${RELEASE_TAG#v}"
+          test "$package_version" = "$tag_version"
+      - name: Check whether the package version is already published
+        id: npm-version
+        env:
+          PACKAGE_NAME: '@lgs1920/autocomplete'
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          package_version="${RELEASE_TAG#v}"
+          if npm view "$PACKAGE_NAME@$package_version" version >/dev/null 2>&1; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+            echo "$PACKAGE_NAME@$package_version is already published; skipping npm publish."
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish package to npm
+        if: steps.npm-version.outputs.published != 'true'
+        env:
+          AUTOCOMPLETE_BUN_PUBLISH_LIFECYCLE: '1'
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: bun publish
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git fetch --force --tags origin
+          git cat-file tag "refs/tags/$GITHUB_REF_NAME" | sed '1,/^$/d' > "$RUNNER_TEMP/release-notes.md"
+          gh release create "$GITHUB_REF_NAME" --verify-tag --title "$GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/release-notes.md"

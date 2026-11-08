@@ -24,6 +24,9 @@
     "LICENSE.md"
   ],
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "bun run scripts/build.mjs",
     "check:package": "bun run scripts/check-package.mjs",
@@ -31,7 +34,8 @@
     "demo:build": "bun run build && bun run demo:build:site",
     "demo:serve": "bun run scripts/serve-demo.mjs",
     "lint": "bunx oxlint .",
-    "verify": "bun run lint && bun run build && bun run check:package && bun run demo:build:site && bun pm pack --dry-run"
+    "verify": "bun run lint && bun run build && bun run check:package && bun run demo:build:site && bun pm pack --dry-run",
+    "publish": "bun scripts/publish.mjs"
   },
   "dependencies": {
     "@awesome.me/webawesome": "3.14.0"
