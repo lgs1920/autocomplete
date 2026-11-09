@@ -497,7 +497,7 @@ export class LGS1920Autocomplete extends HTMLElement {
     }
 
     /**
-     * Set the static options list.
+     * Set the static options list, replacing any wa-option children declared in markup.
      *
      * @param {AutocompleteOption[]} options - Available suggestions.
      */
