@@ -1,6 +1,6 @@
 {
   "name": "@lgs1920/autocomplete",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "An accessible autocomplete Web Component built with Web Awesome 3.",
   "repository": {
     "type": "git",
