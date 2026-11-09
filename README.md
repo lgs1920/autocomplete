@@ -1,55 +1,157 @@
 # @lgs1920/autocomplete
 
-An accessible autocomplete Web Component built with Web Awesome 3. It supports local option arrays, asynchronous search callbacks, optional Font Awesome icons, and host-owned metadata.
+An accessible autocomplete Web Component built with Web Awesome 3. It supports local option arrays, asynchronous search callbacks, single or multiple selection, Web Awesome icons, SVG/PNG image URLs, and host-owned metadata.
 
 The current release is `0.1.2`.
 
 ## Install
 
 ```sh
-bun add @lgs1920/autocomplete @awesome.me/webawesome
+npm install @lgs1920/autocomplete @awesome.me/webawesome
 ```
 
-## Use
+With Bun, use `bun add @lgs1920/autocomplete @awesome.me/webawesome`.
+
+## Quick start
+
+Add the element to your page:
+
+```html
+<lgs1920-autocomplete id="city-search" label="City" name="city" placeholder="Search cities" with-clear>
+  <wa-option value="paris" data-icon="location-dot" data-department="75" data-region="Île-de-France">Paris</wa-option>
+  <wa-option value="reims" data-icon="city" data-department="51" data-region="Grand Est">Reims</wa-option>
+</lgs1920-autocomplete>
+```
+
+Load Web Awesome's base and theme styles, then provide local options or an asynchronous search function:
 
 ```js
 import '@awesome.me/webawesome/dist/styles/webawesome.css'
 import '@awesome.me/webawesome/dist/styles/themes/default.css'
 import '@lgs1920/autocomplete'
 
-const autocomplete = document.querySelector('lgs1920-autocomplete')
-autocomplete.options = [
-  {value: 'troyes', label: 'Troyes', icon: 'location-dot', department: '10'},
-  {value: 'reims', label: 'Reims', icon: 'city', department: '51'},
+const field = document.querySelector('#city-search')
+field.options = [
+  ...field.options,
+  {value: 'lyon', label: 'Lyon', icon: 'location-dot', department: '69', region: 'Auvergne-Rhône-Alpes'},
 ]
-autocomplete.persistence = {id: 'city-search', limit: 5}
 
-autocomplete.addEventListener('wa-select', event => {
-  console.log(event.detail.value, event.detail.option.department)
+field.addEventListener('wa-select', event => {
+  console.log(event.detail.value, event.detail.option.department, event.detail.option.region)
 })
 ```
 
-```html
-<lgs1920-autocomplete
-  label="City"
-  name="city"
-  placeholder="Search cities"
-></lgs1920-autocomplete>
-```
+## Search
 
-For remote search, assign an asynchronous `searchOptions(query, {signal})` callback. The component debounces calls and aborts stale requests.
+### Local options
+
+Declare static choices as direct `<wa-option>` children or set `field.options` to an array in JavaScript. The `value` attribute is submitted, the `label` attribute or trimmed text content supplies the visible label, `data-icon` supplies an icon, and other `data-*` attributes become metadata on the selected option. Setting `field.options` replaces markup options, so it can update them from fetched or generated data at any time.
+
+The component filters `label` and `value` with case-insensitive substring matching and highlights matching text in labels. When the query is empty, saved recent selections appear as suggestions if any exist. If no history exists, the panel stays closed until the chevron opens the complete local list; when recent suggestions are open, the chevron replaces them with that list. `page-size` controls the number of suggestions on each page.
+
+### Remote search
+
+Assign an asynchronous `searchOptions(query, {signal})` function. It receives the current query and an `AbortSignal`, and must return an array of options. Searches start after one character by default and wait `150` milliseconds after the latest keystroke. Set `min-chars="0"` to allow any non-empty query length; the provider is never called for an empty query. New input restarts the delay and aborts stale requests.
 
 ```js
-autocomplete.searchOptions = async (query, {signal}) => {
+field.searchOptions = async (query, {signal}) => {
   const response = await fetch(`/api/cities?q=${encodeURIComponent(query)}`, {signal})
   if (!response.ok) throw new Error('City search failed')
   return response.json()
 }
 ```
 
-Each returned item uses `{value, label, icon?}`; `valeur` is accepted as an alias for `value`. Other fields, such as `variable`, are preserved and included in the `wa-select` event. The component exposes Web Awesome's native `input`, `change`, `focus`, and `blur` events. Read the current text from `event.target.query`, and the selected item from `event.target.selectedOption`. Set `icon-position="end"` to place option icons after their labels.
+Filtered local and remote results are capped by `max-results` (default `50`). The complete local list opened by the disclosure chevron includes every option. Suggestions use `page-size` (default `10`), and the pagination footer reports the current result range.
 
-Set `persistence` to `{id, limit}` to keep the most recently selected options in browser `localStorage`. The stable `id` gives this autocomplete its own history; changing it loads a separate history. Recent items appear when the query is empty. `count` is accepted as an alias for `limit`. Only user selections are saved. Lowering the limit trims older entries, and raising it does not restore entries already removed. Storage errors emit `wa-persistence-error` without blocking selection.
+## Multiple selection
+
+Add `multiple` to let users select several options. The `value` property becomes an array, and `selectedOptions` contains the full option objects. After each choice, the query clears and the placeholder stays hidden while tags remain selected. In a form, each selected value is submitted under the same `name`.
+
+Five tags are shown by default. Additional selections appear behind a `+N` control; activating it opens the full selection list, paginated 10 selections per page. Set `max-options-visible` to change the inline tag count, or to `0` to show every tag inline.
+
+```html
+<lgs1920-autocomplete id="cities" label="Cities" name="city" multiple with-clear></lgs1920-autocomplete>
+```
+
+## Option icons
+
+Set `icon` on an option to show an icon beside its label in suggestions and selected tags. You can mix these forms in one options array:
+
+- A Web Awesome icon name such as `'location-dot'`, or a descriptor such as `{name: 'house', family: 'classic', variant: 'solid'}`. See the [`wa-icon` reference](https://webawesome.com/docs/components/icon).
+- A local SVG/PNG path or remote SVG/PNG URL string, such as `'/assets/icons/home.svg'` or `'https://flagcdn.io/fr.svg'`. Direct strings are recognized by their `.svg` or `.png` extension.
+- An image descriptor, `{src: imageUrl}`, for Blob URLs, data URLs, extensionless URLs, or a URL with fallback text: `{src: imageUrl, fallback: '🇫🇷'}`. Fallback text appears if the image fails to load.
+
+`icon-position="start|end"` places each option icon before or after its label. For a fixed icon inside the input, use the `start` or `end` slot instead; slots do not set suggestion icons.
+
+```js
+field.options = [
+  {value: 'paris', label: 'Paris', icon: 'location-dot'},
+  {value: 'home', label: 'Home', icon: '/assets/icons/home.svg'},
+  {value: 'rocket', label: 'Rocket', icon: {name: 'rocket', family: 'classic', variant: 'solid'}},
+  {value: 'france', label: 'France', icon: {src: 'https://flagcdn.io/fr.svg', fallback: '🇫🇷'}},
+]
+```
+
+For a remote search API, map its image URL into `icon.src` and provide optional fallback text:
+
+```js
+field.searchOptions = async (query, {signal}) => {
+  const response = await fetch('/api/search?q=' + encodeURIComponent(query), {signal})
+  const results = await response.json()
+  return results.map(item => ({
+    value: item.id,
+    label: item.name,
+    icon: item.iconUrl
+      ? {src: item.iconUrl, fallback: item.iconEmoji}
+      : 'location-dot',
+  }))
+}
+```
+
+For SVG/PNG files matched by a [Vite glob import](https://vite.dev/guide/features#glob-import), pass each resolved URL as `icon.src`. This is bundler-specific; the component only receives the resulting URLs:
+
+```js
+const iconUrls = import.meta.glob('./icons/*.{svg,png}', {
+  eager: true,
+  import: 'default',
+  query: '?url',
+})
+
+field.options = Object.entries(iconUrls).map(([path, src]) => ({
+  value: path,
+  label: path.split('/').pop(),
+  icon: {src},
+}))
+```
+
+For a Blob, create an object URL and pass it through `src`. Revoke it when the option is no longer used:
+
+```js
+const blobUrl = URL.createObjectURL(svgBlob)
+field.options = [{value: 'custom', label: 'Custom', icon: {src: blobUrl}}]
+// When removing or replacing this option later:
+// URL.revokeObjectURL(blobUrl)
+```
+
+## Values and events
+
+Each option requires a string or numeric `value` and a string `label`. `valeur` is accepted as an alias for `value`. Additional properties, such as `department`, remain on the selected option and are included in selection events.
+
+The component exposes `value`, `query`, `selectedOption`, and `selectedOptions`. Read the typed text from `event.target.query`; use `selectedOption` for single selection and `selectedOptions` for multiple selection. `wa-select` fires when a suggestion is selected. In multiple mode, `wa-deselect` fires when an item is removed. Both events include the option metadata in `event.detail.option`.
+
+Standard `input`, `change`, `focus`, and `blur` events are available on the component. The `with-clear` attribute adds an accessible query-clear button; in multiple mode, a separate clear-all button removes selected tags. Activating either clear control emits `wa-clear`.
+
+## Input slots and styling
+
+Use the `start` and `end` slots to place fixed icons or other content inside the input. Per-option icons come from each option's `icon` property; set `icon-position="end"` to move them after the label in suggestions and selected tags.
+
+The component forwards Web Awesome input attributes `size`, `appearance`, `pill`, `hint`, and `readonly`. Its colors follow the active Web Awesome theme. Override the component's CSS custom properties on the host to style the panels and option states, or set Web Awesome `--wa-color-*` tokens to theme the input and panels together. See the [styling reference](./docs/specifications.md#styling) for the full list.
+
+## Recent selections
+
+Set the JavaScript `persistence` property to `{id, limit}` to save recent user selections in browser `localStorage`. Each id has a separate history. Use `{group, limit}` or `{id, group, limit}` to share one history between components; `group` takes precedence over `id`. `count` is accepted as an alias for `limit`.
+
+Only user selections are saved. Lowering the limit trims older entries; increasing it later does not restore them. Storage errors emit `wa-persistence-error` without blocking selection.
 
 ## Documentation and examples
 
@@ -63,10 +165,10 @@ Set `persistence` to `{id, limit}` to keep the most recently selected options in
 ```sh
 bun install
 bun run verify
-bun run demo:serve
+bun run demo:preview
 ```
 
-The demo uses port `4177`.
+The preview command stops a previous project demo server on port `4177`, rebuilds the demo, and serves it at `http://127.0.0.1:4177/`. `bun run demo:serve` serves the current build without rebuilding it.
 
 ## Publish on npm
 

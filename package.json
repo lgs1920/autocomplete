@@ -30,11 +30,13 @@
   "scripts": {
     "build": "bun run scripts/build.mjs",
     "check:package": "bun run scripts/check-package.mjs",
+    "test": "bun test",
     "demo:build:site": "bun run scripts/build-demo.mjs && bunx @11ty/eleventy --config=eleventy.config.cjs",
-    "demo:build": "bun run build && bun run demo:build:site",
-    "demo:serve": "bun run scripts/serve-demo.mjs",
+    "demo:build": "bun run scripts/stop-demo-server.mjs && bun run build && bun run demo:build:site",
+    "demo:serve": "bun run scripts/stop-demo-server.mjs && bun run scripts/serve-demo.mjs",
+    "demo:preview": "bun run demo:build && bun run demo:serve",
     "lint": "bunx oxlint .",
-    "verify": "bun run lint && bun run build && bun run check:package && bun run demo:build:site && bun pm pack --dry-run",
+    "verify": "bun run test && bun run lint && bun run build && bun run check:package && bun run demo:build:site && bun pm pack --dry-run",
     "publish": "bun scripts/publish.mjs"
   },
   "dependencies": {

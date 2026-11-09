@@ -10,11 +10,12 @@ Use this skill for the `@lgs1920/autocomplete` package and its `<lgs1920-autocom
 ## Public contract
 
 - Keep the custom element name and package entry point stable. Expose Web Awesome native form events and use lowercase, kebab-style `wa-*` names for custom events.
-- Accept option arrays with `value`, `label`, optional Web Awesome `icon`, and arbitrary pass-through metadata.
+- Accept option arrays with `value`, `label`, optional Web Awesome icon names/descriptors, local or remote SVG/PNG image URLs, Blob/data URLs through `{src}`, and arbitrary pass-through metadata.
 - Keep local filtering and asynchronous `searchOptions(query, {signal})` behavior inside the component.
 - Support optional recent-selection persistence in browser `localStorage`, isolated by consumer-provided id and bounded by a configured limit.
 - Keep selected raw values, visible labels, and caller metadata distinct.
-- Render icons with `wa-icon`; use `icon-position="start|end"` to place them in suggestions.
+- Render Web Awesome icons with `wa-icon` and image URL icons as decorative images; support optional fallback text for failed image loads and use `icon-position="start|end"` to place icons in suggestions and selected tags.
+- Keep input `start`/`end` slots distinct from per-option `icon` data, and document bundler-specific glob imports as URL resolution performed by the host app.
 - Do not depend on or reproduce `wa-combobox` behavior.
 
 ## Boundaries and lifecycle

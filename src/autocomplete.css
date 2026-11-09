@@ -8,7 +8,7 @@
  * email: studio@lgs1920.fr
  *
  * Created on: 2026-11-08
- * Last modified: 2026-11-08
+ * Last modified: 2026-11-09
  *
  *
  * Copyright © 2026 LGS1920
@@ -26,12 +26,91 @@
 
 .input {
     inline-size: 100%;
-    /* Keep the placeholder visibly distinct from the disabled input state. */
-    --wa-form-control-placeholder-color: var(--wa-color-text-quiet);
+    /* Override the placeholder color without changing the page-wide Web Awesome token. */
+    --wa-form-control-placeholder-color: var(--lgs1920-autocomplete-placeholder-color, var(--wa-color-text-quiet));
 }
 
-.disclosure {
-    color: var(--wa-color-text-normal);
+.input.multiple::part(start) {
+    flex: 0 0 auto;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+}
+
+.input.multiple.has-selection::part(input-wrapper) {
+    height: auto;
+    min-height: var(--wa-form-control-height);
+    flex-wrap: wrap;
+    row-gap: var(--wa-space-2xs);
+    padding-block: var(--wa-space-2xs);
+}
+
+.input.multiple.has-selection::part(start) {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    box-sizing: border-box;
+    padding-inline-end: calc(var(--wa-form-control-padding-inline) + 6.5rem);
+}
+
+.input.multiple.has-selection::part(end) {
+    position: absolute;
+    inset-block-start: var(--wa-space-2xs);
+    inset-inline-end: var(--wa-form-control-padding-inline);
+}
+
+.selected-tags {
+    display: flex;
+    flex: 1 1 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--wa-space-2xs);
+    max-inline-size: 100%;
+}
+
+.selected-tags[hidden],
+.selected-count[hidden],
+.clear-selection[hidden],
+.selection-actions[hidden] {
+    display: none;
+}
+
+.selected-tags wa-tag {
+    box-sizing: border-box;
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+}
+
+.selected-tags wa-tag::part(content) {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selected-tags wa-tag::part(remove-button) {
+    flex: none;
+}
+
+.selection-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--wa-space-xs);
+}
+
+.selected-count {
+    flex: none;
+    cursor: pointer;
+}
+
+.selected-count:focus-visible {
+    outline: var(--wa-focus-ring-width) solid var(--wa-color-focus);
+    outline-offset: var(--wa-focus-ring-offset);
+}
+
+.selected-count[aria-disabled="true"] {
+    cursor: not-allowed;
 }
 
 .popup {
@@ -42,23 +121,99 @@
 .popup::part(popup) {
     padding: 0;
     overflow: hidden;
-    border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+    /* Override the suggestion panel border color independently from the theme. */
+    border: var(--wa-border-width-s) solid var(--lgs1920-autocomplete-panel-border-color, var(--wa-color-surface-border));
     border-radius: var(--wa-border-radius-m);
-    background: var(--wa-color-surface-raised);
-    color: var(--wa-color-text-normal);
+    /* Override the suggestion panel surface while retaining the active theme by default. */
+    background: var(--lgs1920-autocomplete-panel-background, var(--wa-color-surface-raised));
+    /* Override text color inside the suggestion panel independently from the theme. */
+    color: var(--lgs1920-autocomplete-panel-color, var(--wa-color-text-normal));
     box-shadow: var(--wa-shadow-m);
 }
 
 .panel {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr) auto;
     /* Controls the maximum height of the suggestion panel. */
     max-block-size: var(--lgs1920-autocomplete-max-height, 16rem);
 }
 
 .listbox {
     overflow: auto;
+    min-block-size: 0;
     padding: var(--wa-space-2xs);
+}
+
+.pagination,
+.selected-pagination {
+    display: block;
+    inline-size: 100%;
+}
+
+.pagination::part(pagination) {
+    justify-content: center;
+}
+
+.selected-popup {
+    --selected-panel-background: var(--lgs1920-autocomplete-panel-background, var(--wa-color-surface-raised));
+    --selected-panel-border-color: var(--lgs1920-autocomplete-panel-border-color, var(--wa-color-surface-border));
+    --selected-panel-color: var(--lgs1920-autocomplete-panel-color, var(--wa-color-text-normal));
+    z-index: 1001;
+    inline-size: min(24rem, calc(100vw - var(--wa-space-l)));
+}
+
+.selected-popup::part(popup) {
+    inline-size: min(24rem, calc(100vw - var(--wa-space-l)));
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.selected-card {
+    --spacing: var(--wa-space-xs);
+    --wa-color-surface-default: var(--selected-panel-background);
+    --wa-color-surface-border: var(--selected-panel-border-color);
+    --wa-shadow-s: var(--wa-shadow-m);
+    box-sizing: border-box;
+    color: var(--selected-panel-color);
+    inline-size: 100%;
+    max-block-size: min(24rem, calc(100vh - var(--wa-space-2xl)));
+    overflow-y: auto;
+}
+
+.selected-panel {
+    display: grid;
+    gap: var(--wa-space-2xs);
+}
+
+.selected-list {
+    display: grid;
+    gap: var(--wa-space-2xs);
+    min-inline-size: 0;
+}
+
+.selected-list wa-tag {
+    box-sizing: border-box;
+    min-inline-size: 0;
+    justify-self: start;
+    max-inline-size: 100%;
+}
+
+.selected-list wa-tag::part(content) {
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.selected-list wa-tag::part(remove-button) {
+    flex: none;
+}
+
+.selected-pagination::part(pagination) {
+    justify-content: center;
 }
 
 .option {
@@ -68,21 +223,27 @@
     min-block-size: var(--wa-form-control-height, var(--wa-space-xl));
     padding-inline: var(--wa-space-s);
     border-radius: var(--wa-border-radius-s);
-    color: var(--wa-color-text-normal);
+    /* Override option text color independently from the panel and page text. */
+    color: var(--lgs1920-autocomplete-option-color, var(--wa-color-text-normal));
     cursor: pointer;
 
     &[data-active="true"] {
         outline: var(--wa-focus-ring-width) solid var(--wa-color-focus);
         outline-offset: calc(-1 * var(--wa-focus-ring-width));
-        background: var(--wa-color-neutral-fill-quiet);
+        /* Override the keyboard-active option background. */
+        background: var(--lgs1920-autocomplete-option-active-background, var(--wa-color-neutral-fill-quiet));
     }
 
     &[aria-selected="true"] {
-        background: var(--wa-color-brand-fill-quiet);
+        /* Override the selected option background. */
+        background: var(--lgs1920-autocomplete-option-selected-background, var(--wa-color-brand-fill-quiet));
+        /* Override selected option text while keeping the default theme contrast pairing. */
+        color: var(--lgs1920-autocomplete-option-selected-color, var(--wa-color-brand-on-quiet));
     }
 
     &:hover {
-        background: var(--wa-color-neutral-fill-quiet);
+        /* Override the pointer-hover option background. */
+        background: var(--lgs1920-autocomplete-option-hover-background, var(--wa-color-neutral-fill-quiet));
     }
 }
 
@@ -94,9 +255,30 @@
     white-space: nowrap;
 }
 
+.option-match {
+    border-radius: var(--wa-border-radius-2xs, 0.125rem);
+    background: var(--wa-color-brand-fill-quiet);
+    color: var(--wa-color-brand-on-quiet);
+    font-weight: var(--wa-font-weight-bold);
+}
+
 .option-icon {
     flex: none;
-    color: var(--wa-color-text-quiet);
+    inline-size: 1em;
+    block-size: 1em;
+    /* Override suggestion icon color independently from option text. */
+    color: var(--lgs1920-autocomplete-option-icon-color, var(--wa-color-text-quiet));
+}
+
+.option-icon-image {
+    object-fit: contain;
+}
+
+.option-icon-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
 .message {
