@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="../assets/webawesome.css">
     <link rel="stylesheet" href="../assets/styles.css">
 </head>
-<body>
+<body class="docs-page">
 <nav class="site-banner" aria-label="Site navigation">
     <a class="site-title" href="../">LGS1920 / autocomplete</a>
     <div class="site-links">
@@ -30,14 +30,34 @@
 
     <section class="content-card" aria-labelledby="option-shape-heading">
         <h2 id="option-shape-heading">Option shape</h2>
-        <p>Every option needs a string or numeric <code>value</code> (or <code>valeur</code>) and a string <code>label</code>. Optional <code>icon</code> values accept Web Awesome icon names or descriptors in the form <code>{name, family?, variant?}</code>, SVG/PNG URL strings, or image descriptors in the form <code>{src, fallback?}</code>. The fallback text appears if the image cannot load. Other properties, such as <code>department</code> and <code>region</code>, are preserved as option metadata.</p>
+        <p>Every option needs a string or numeric <code>value</code> (or <code>valeur</code>) and a string <code>label</code>. Optional <code>icon</code> values accept Web Awesome icon names or descriptors in the form <code>{name, family?, variant?}</code>, SVG/PNG URL strings, or image descriptors in the form <code>{src, fallback?}</code>. The fallback text appears if the image cannot load. Other properties, such as <code>department</code>, <code>region</code>, and <code>country</code>, are preserved as option metadata.</p>
         <pre data-language="JSON"><code>{
   <span class="token-property">"value"</span>: <span class="token-string">"paris"</span>,
   <span class="token-property">"label"</span>: <span class="token-string">"Paris"</span>,
   <span class="token-property">"icon"</span>: <span class="token-string">"location-dot"</span>,
   <span class="token-property">"department"</span>: <span class="token-string">"75"</span>,
-  <span class="token-property">"region"</span>: <span class="token-string">"Île-de-France"</span>
+  <span class="token-property">"region"</span>: <span class="token-string">"Île-de-France"</span>,
+  <span class="token-property">"country"</span>: <span class="token-string">"France"</span>
 }</code></pre>
+    </section>
+
+    <section class="content-card" aria-labelledby="local-options-heading">
+        <h2 id="local-options-heading">Local options</h2>
+        <p>Provide local choices in either HTML or JavaScript. Direct <code>wa-option</code> children are read as the initial list. Assigning an array to <code>field.options</code> is useful for generated data and replaces any child options on that field. Visible suggestions are rendered with Web Awesome <code>wa-option</code> elements, including results from remote search.</p>
+        <h3>Static choices with <code>wa-option</code></h3>
+        <p>Set <code>value</code> on each child. Its trimmed text becomes the visible label unless a <code>label</code> attribute is provided. Use <code>data-icon</code> for an icon and other <code>data-*</code> attributes for string metadata; dashed names become camel-case keys on the option.</p>
+        <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"markup-city-search"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"City"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"city"</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;</span><span class="token-tag">wa-option</span> <span class="token-attribute">value</span>=<span class="token-attribute-value">"paris"</span> <span class="token-attribute">data-icon</span>=<span class="token-attribute-value">"location-dot"</span> <span class="token-attribute">data-department</span>=<span class="token-attribute-value">"75"</span> <span class="token-attribute">data-region</span>=<span class="token-attribute-value">"Île-de-France"</span> <span class="token-attribute">data-country</span>=<span class="token-attribute-value">"France"</span><span class="token-punctuation">&gt;</span>Paris<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-option</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;</span><span class="token-tag">wa-option</span> <span class="token-attribute">value</span>=<span class="token-attribute-value">"reims"</span> <span class="token-attribute">data-icon</span>=<span class="token-attribute-value">"city"</span> <span class="token-attribute">data-department</span>=<span class="token-attribute-value">"51"</span> <span class="token-attribute">data-region</span>=<span class="token-attribute-value">"Grand Est"</span> <span class="token-attribute">data-country</span>=<span class="token-attribute-value">"France"</span><span class="token-punctuation">&gt;</span>Reims<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-option</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
+        <h3>JavaScript-managed choices</h3>
+        <p>Use an empty autocomplete element when the list comes from JavaScript. Each object uses the same option shape, and its additional fields remain available in the selected option and selection events.</p>
+        <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"js-city-search"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"City"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"city"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
+        <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#js-city-search'</span>)
+field.options = [
+  {<span class="token-property">value</span>: <span class="token-string">'paris'</span>, <span class="token-property">label</span>: <span class="token-string">'Paris'</span>, <span class="token-property">icon</span>: <span class="token-string">'location-dot'</span>, <span class="token-property">department</span>: <span class="token-string">'75'</span>, <span class="token-property">region</span>: <span class="token-string">'Île-de-France'</span>, <span class="token-property">country</span>: <span class="token-string">'France'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'reims'</span>, <span class="token-property">label</span>: <span class="token-string">'Reims'</span>, <span class="token-property">icon</span>: <span class="token-string">'city'</span>, <span class="token-property">department</span>: <span class="token-string">'51'</span>, <span class="token-property">region</span>: <span class="token-string">'Grand Est'</span>, <span class="token-property">country</span>: <span class="token-string">'France'</span>},
+]</code></pre>
     </section>
 
     <section class="content-card" aria-labelledby="properties-heading">
@@ -48,6 +68,7 @@
                 <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
                 <tbody>
                     <tr><td><code>options</code></td><td>Option[] property</td><td><code>[]</code></td><td>Local suggestions. Direct <code>wa-option</code> children provide initial choices; assigning this property replaces them and supports JavaScript-managed data. Matching checks <code>label</code> and <code>value</code>, without case sensitivity, and highlights matching text in labels. When recent suggestions are open, the disclosure chevron replaces them with the complete local list and points up. Activate it again to close the list. With an empty query and no recent suggestions, the chevron opens the full list directly. With <code>multiple</code>, options can be toggled without closing it.</td></tr>
+                    <tr><td><code>renderOption</code></td><td>Function property</td><td><code>null</code></td><td>Synchronous renderer <code>(option, {query}) =&gt; Node</code> for custom suggestion content. It replaces the default label rendering; <code>option.label</code> remains the search text, selected input text, and accessible name. Option icons still follow <code>icon-position</code>. Return a fresh, non-interactive DOM node for each suggestion; set to <code>null</code> to restore the default label view.</td></tr>
                     <tr><td><code>searchOptions</code></td><td>Function property</td><td><code>null</code></td><td>Async provider <code>(query, {signal}) =&gt; Promise&lt;Option[]&gt;</code>. Setting it enables remote search.</td></tr>
                     <tr><td><code>persistence</code></td><td><code>{id?, group?, limit}</code> property</td><td><code>null</code></td><td>Requires an <code>id</code> or a <code>group</code>. Saves the last selected options under an id-specific key, or under a shared group key when <code>group</code> is set. Components with the same group share their recent history. <code>count</code> aliases <code>limit</code>.</td></tr>
                     <tr><td><code>value</code></td><td>String, number, or array property</td><td><code>''</code> or <code>[]</code></td><td>Raw selected value. With <code>multiple</code>, this is an array. Setting it selects matching options already available to the component; it does not start a remote search.</td></tr>
@@ -60,7 +81,7 @@
                     <tr><td><code>name</code></td><td>String attribute/property</td><td><code>''</code></td><td>Form field name for selected values. Multiple selection submits repeated entries under this name.</td></tr>
                     <tr><td><code>disabled</code></td><td>Boolean attribute/property</td><td><code>false</code></td><td>Disables the input and excludes its value from form submission.</td></tr>
                     <tr><td><code>with-clear</code></td><td>Boolean attribute / <code>withClear</code> property</td><td><code>false</code></td><td>Adds an accessible query-clear control. In multiple mode, a separate button clears all selected tags.</td></tr>
-                    <tr><td><code>multiple</code></td><td>Boolean attribute/property</td><td><code>false</code></td><td>Allows several options to be selected. Choosing an option clears the query for the next choice and hides the placeholder while tags are selected. Values are submitted as repeated form entries under the same <code>name</code>.</td></tr>
+                    <tr><td><code>multiple</code></td><td>Boolean attribute/property</td><td><code>false</code></td><td>Allows several options to be selected. Adding an option clears the current query. The complete local list stays open if it was expanded; otherwise, recent suggestions appear when configured, or the panel stays closed until reopened. The placeholder stays hidden while tags are selected. Values are submitted as repeated form entries under the same <code>name</code>.</td></tr>
                     <tr><td><code>max-options-visible</code></td><td>Non-negative number attribute / <code>maxOptionsVisible</code> property</td><td><code>5</code></td><td>Maximum selected tags shown before a <code>+N</code> control opens the full selection list, paginated 10 items per page. Set to <code>0</code> to show every tag inline.</td></tr>
                     <tr><td><code>size</code></td><td><code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td><code>m</code></td><td>Forwards the Web Awesome input size. The <code>small</code>, <code>medium</code>, and <code>large</code> aliases are also supported.</td></tr>
                     <tr><td><code>appearance</code></td><td><code>filled</code>, <code>outlined</code>, or <code>filled-outlined</code></td><td><code>outlined</code></td><td>Forwards the Web Awesome input appearance.</td></tr>
@@ -70,11 +91,32 @@
                     <tr><td><code>icon-position</code></td><td>Attribute / <code>iconPosition</code> property: <code>start</code> or <code>end</code></td><td><code>start</code></td><td>Places each option icon before or after its label in suggestions and, in multiple mode, selected tags.</td></tr>
                     <tr><td><code>min-chars</code></td><td>Number attribute / <code>minChars</code> property</td><td><code>1</code></td><td>Minimum non-empty query length before invoking the async provider. Set to <code>0</code> to allow any non-empty query; an empty query never invokes the provider.</td></tr>
                     <tr><td><code>debounce</code></td><td>Milliseconds attribute/property</td><td><code>150</code></td><td>Wait after the latest keystroke before invoking the async provider. New input restarts the delay and aborts any stale request.</td></tr>
-                    <tr><td><code>page-size</code></td><td>Positive number attribute / <code>pageSize</code> property</td><td><code>10</code></td><td>Suggestions shown per page. Pagination shows the displayed result range and page controls when more than one page is available.</td></tr>
+                    <tr><td><code>page-size</code></td><td>Positive number attribute / <code>pageSize</code> property</td><td><code>10</code></td><td>Suggestions shown per page. When more than one page is available, a compact footer shows the current result range and a compact page counter with previous/next controls.</td></tr>
                     <tr><td><code>max-results</code></td><td>Positive number attribute / <code>maxResults</code> property</td><td><code>50</code></td><td>Maximum filtered local or remote results. Opening the complete local list from the disclosure chevron includes every option.</td></tr>
                 </tbody>
             </table>
         </div>
+    </section>
+
+    <section class="content-card" aria-labelledby="custom-rendering-heading">
+        <h2 id="custom-rendering-heading">Custom suggestion content</h2>
+        <p>Set <code>renderOption</code> to return a fresh DOM node for each suggestion. This example renders location metadata in a <code>wa-card</code>. The option label still controls searching, the selected input value, and the accessible option name; custom content does not receive the default query highlighting.</p>
+        <pre data-language="JavaScript"><code>field.renderOption = option <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">const</span> card = document.createElement(<span class="token-string">'wa-card'</span>)
+  card.setAttribute(<span class="token-string">'appearance'</span>, <span class="token-string">'outlined'</span>)
+  <span class="token-keyword">for</span> (<span class="token-keyword">const</span> [label, value] <span class="token-keyword">of</span> [
+    [<span class="token-string">'City'</span>, option.city],
+    [<span class="token-string">'Department'</span>, option.department],
+    [<span class="token-string">'Region'</span>, option.region],
+    [<span class="token-string">'Country'</span>, option.country],
+  ]) {
+    <span class="token-keyword">if</span> (!value) <span class="token-keyword">continue</span>
+    <span class="token-keyword">const</span> line = document.createElement(<span class="token-string">'div'</span>)
+    line.textContent = <span class="token-string">`${label}: ${value}`</span>
+    card.append(line)
+  }
+  <span class="token-keyword">return</span> card
+}</code></pre>
     </section>
 
     <section class="content-card" aria-labelledby="icons-heading">
@@ -202,6 +244,7 @@ field.persistence = {<span class="token-property">id</span>: <span class="token-
                     <tr><td><code>wa-select</code></td><td><code>{option, value, label, selectedOptions}</code></td><td>After a suggestion is selected. In multiple mode, <code>value</code> is an array.</td></tr>
                     <tr><td><code>wa-deselect</code></td><td><code>{option, value, label, selectedOptions}</code></td><td>When a selected option is toggled off in multiple mode.</td></tr>
                     <tr><td><code>wa-search-error</code></td><td><code>{error, query}</code></td><td>When a current async search fails.</td></tr>
+                    <tr><td><code>wa-option-render-error</code></td><td><code>{error, option}</code></td><td>When <code>renderOption</code> throws or does not return a DOM node. The default label view is used for that suggestion.</td></tr>
                     <tr><td><code>wa-persistence-error</code></td><td><code>{error, action, id, group?}</code></td><td>When browser storage cannot be read or written. For a group-only configuration, <code>id</code> contains the group name.</td></tr>
                 </tbody>
             </table>

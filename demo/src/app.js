@@ -94,7 +94,15 @@ brandColorAutocomplete.options = brandColorOptions
 brandColorAutocomplete.persistence = {id: 'brand-color-search-demo', limit: 3}
 
 /**
- * Search Photon for cities and map its GeoJSON places to autocomplete options.
+ * Format a Photon place with its city, department, region, and country.
+ *
+ * @param {object} place - Photon place properties.
+ * @returns {string} A comma-separated place label without duplicate parts.
+ */
+const formatCityLabel = place => [...new Set([place.name, place.county, place.state, place.country].filter(Boolean))].join(', ')
+
+/**
+ * Search Photon for cities and localities and map its GeoJSON places to autocomplete options.
  *
  * @param {string} query - Current search query.
  * @param {{signal: AbortSignal}} context - Request context.
@@ -107,6 +115,7 @@ const searchCities = async (query, {signal}, maxResults = remoteAutocomplete.max
     endpoint.searchParams.set('limit', String(maxResults))
     endpoint.searchParams.set('lang', 'en')
     endpoint.searchParams.append('layer', 'city')
+    endpoint.searchParams.append('layer', 'locality')
 
     const response = await fetch(endpoint, {signal})
     if (!response.ok) throw new Error(`City search failed with status ${response.status}`)
@@ -121,12 +130,13 @@ const searchCities = async (query, {signal}, maxResults = remoteAutocomplete.max
         const [longitude, latitude] = feature.geometry?.coordinates ?? []
         return [{
             value: `${place.osm_type}/${place.osm_id}`,
-            label: [place.name, place.country].filter(Boolean).join(', '),
+            label: formatCityLabel(place),
             icon: 'city',
             city: place.name,
+            department: place.county,
+            region: place.state,
             country: place.country,
             countryCode: place.countrycode,
-            region: place.state,
             latitude,
             longitude,
             osmType: place.osm_type,
@@ -135,6 +145,36 @@ const searchCities = async (query, {signal}, maxResults = remoteAutocomplete.max
     })
 }
 
+/**
+ * Render a city suggestion as a card with one location field per line.
+ *
+ * @param {object} option - City option mapped from a Photon place.
+ * @returns {HTMLElement} A card containing the available city fields.
+ */
+const renderCityOption = option => {
+    const card = document.createElement('wa-card')
+    card.setAttribute('appearance', 'outlined')
+
+    for (const [label, value] of [
+        ['City', option.city],
+        ['Department', option.department],
+        ['Region', option.region],
+        ['Country', option.country],
+    ]) {
+        if (!value) continue
+        const line = document.createElement('div')
+        const name = document.createElement('strong')
+        name.textContent = `${label}: `
+        const fieldValue = document.createElement('span')
+        fieldValue.textContent = value
+        line.append(name, fieldValue)
+        card.append(line)
+    }
+
+    return card
+}
+
+remoteAutocomplete.renderOption = renderCityOption
 remoteAutocomplete.searchOptions = searchCities
 iconSourceAutocomplete.options = [
     {value: 'compass', label: 'Compass route', icon: '/icons/compass.svg'},
@@ -331,7 +371,7 @@ const renderSelection = element => {
     }
 
     if (selectedOptions.length === 0) {
-        output.textContent = 'Nothing selected'
+        output.textContent = element === iconSourceAutocomplete ? 'No places selected' : 'Nothing selected'
         return
     }
 

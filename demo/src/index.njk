@@ -208,8 +208,8 @@ field.addEventListener(<span class="token-string">'wa-clear'</span>, () <span cl
             <article class="demo-card">
                 <p class="eyebrow">Photon · cyan filled-outlined style</p>
                 <h3>Search cities</h3>
-                <lgs1920-autocomplete id="remote-autocomplete" class="autocomplete-cyan" label="City" size="l" appearance="filled-outlined" min-chars="2" debounce="350" page-size="3" max-results="32" placeholder="Try lon to see pagination" with-clear></lgs1920-autocomplete>
-                <p class="section-intro">Searches <a href="https://photon.komoot.io/">Photon</a> live after two characters and waits 350 ms after the last keystroke. Try <code>lon</code> to see the page controls: the field requests up to 32 cities and shows three per page when more than three matches are returned. This larger filled-outlined field uses cyan tokens for its suggestion panel and option states.</p>
+                <lgs1920-autocomplete id="remote-autocomplete" class="autocomplete-cyan" label="City" size="l" appearance="filled-outlined" min-chars="2" debounce="350" page-size="8" max-results="32" placeholder="Try par to see pagination" with-clear></lgs1920-autocomplete>
+                <p class="section-intro">Searches <a href="https://photon.komoot.io/">Photon</a> cities and localities live after two characters and waits 350 ms after the last keystroke. Each suggestion uses a card with the city, department, region, and country on separate lines when available. Photon is asked for up to 32 matches, shown eight per page. When another page exists, the footer shows the page size, current page and page count, and Web Awesome pagination controls. This larger filled-outlined field uses cyan tokens for its suggestion panel and option states.</p>
                 <wa-details summary="View response">
                     <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="remote-autocomplete-selection">Nothing selected</code></pre>
                 </wa-details>
@@ -217,7 +217,7 @@ field.addEventListener(<span class="token-string">'wa-clear'</span>, () <span cl
                 <wa-dialog id="city-search-example-dialog" class="example-code-dialog" label="Example code: Search cities" with-footer>
                     <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
                     <p class="eyebrow">HTML</p>
-                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"remote-autocomplete"</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"autocomplete-cyan"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"City"</span> <span class="token-attribute">size</span>=<span class="token-attribute-value">"l"</span> <span class="token-attribute">appearance</span>=<span class="token-attribute-value">"filled-outlined"</span> <span class="token-attribute">min-chars</span>=<span class="token-attribute-value">"2"</span> <span class="token-attribute">debounce</span>=<span class="token-attribute-value">"350"</span> <span class="token-attribute">page-size</span>=<span class="token-attribute-value">"3"</span> <span class="token-attribute">max-results</span>=<span class="token-attribute-value">"32"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"remote-autocomplete"</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"autocomplete-cyan"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"City"</span> <span class="token-attribute">size</span>=<span class="token-attribute-value">"l"</span> <span class="token-attribute">appearance</span>=<span class="token-attribute-value">"filled-outlined"</span> <span class="token-attribute">min-chars</span>=<span class="token-attribute-value">"2"</span> <span class="token-attribute">debounce</span>=<span class="token-attribute-value">"350"</span> <span class="token-attribute">page-size</span>=<span class="token-attribute-value">"8"</span> <span class="token-attribute">max-results</span>=<span class="token-attribute-value">"32"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
                     <p class="eyebrow">CSS</p>
                     <pre data-language="CSS"><code>.autocomplete-cyan {
     /* Blend the panel with the active theme's raised surface. */
@@ -238,24 +238,58 @@ field.addEventListener(<span class="token-string">'wa-clear'</span>, () <span cl
     --lgs1920-autocomplete-option-icon-color: color-mix(in srgb, var(--wa-color-text-quiet) 40%, var(--wa-color-cyan) 60%);
 }</code></pre>
                     <p class="eyebrow">JavaScript</p>
-                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#remote-autocomplete'</span>)
+                    <pre data-language="JavaScript"><code><span class="token-comment">/**
+ * Format a Photon place with its city, department, region, and country.
+ * @param {object} place - Photon place properties.
+ */</span>
+<span class="token-keyword">const</span> formatCityLabel = place <span class="token-operator">=&gt;</span> [...<span class="token-keyword">new</span> Set([place.name, place.county, place.state, place.country].filter(Boolean))].join(<span class="token-string">', '</span>)
+
+<span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#remote-autocomplete'</span>)
+field.renderOption = option <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">const</span> card = document.createElement(<span class="token-string">'wa-card'</span>)
+  card.setAttribute(<span class="token-string">'appearance'</span>, <span class="token-string">'outlined'</span>)
+  <span class="token-keyword">for</span> (<span class="token-keyword">const</span> [label, value] <span class="token-keyword">of</span> [
+    [<span class="token-string">'City'</span>, option.city],
+    [<span class="token-string">'Department'</span>, option.department],
+    [<span class="token-string">'Region'</span>, option.region],
+    [<span class="token-string">'Country'</span>, option.country],
+  ]) {
+    <span class="token-keyword">if</span> (!value) <span class="token-keyword">continue</span>
+    <span class="token-keyword">const</span> line = document.createElement(<span class="token-string">'div'</span>)
+    <span class="token-keyword">const</span> name = document.createElement(<span class="token-string">'strong'</span>)
+    name.textContent = <span class="token-string">`${label}: `</span>
+    <span class="token-keyword">const</span> fieldValue = document.createElement(<span class="token-string">'span'</span>)
+    fieldValue.textContent = value
+    line.append(name, fieldValue)
+    card.append(line)
+  }
+  <span class="token-keyword">return</span> card
+}
+
 field.searchOptions = <span class="token-keyword">async</span> (query, {signal}) <span class="token-operator">=&gt;</span> {
   <span class="token-keyword">const</span> endpoint = <span class="token-keyword">new</span> URL(<span class="token-string">'https://photon.komoot.io/api/'</span>)
   endpoint.searchParams.set(<span class="token-string">'q'</span>, query.trim())
   endpoint.searchParams.set(<span class="token-string">'limit'</span>, String(field.maxResults))
   endpoint.searchParams.set(<span class="token-string">'lang'</span>, <span class="token-string">'en'</span>)
   endpoint.searchParams.append(<span class="token-string">'layer'</span>, <span class="token-string">'city'</span>)
+  endpoint.searchParams.append(<span class="token-string">'layer'</span>, <span class="token-string">'locality'</span>)
   <span class="token-keyword">const</span> response = <span class="token-keyword">await</span> fetch(endpoint, {signal})
   <span class="token-keyword">if</span> (!response.ok) <span class="token-keyword">throw</span> <span class="token-keyword">new</span> Error(<span class="token-string">'City search failed'</span>)
   <span class="token-keyword">const</span> result = <span class="token-keyword">await</span> response.json()
-  <span class="token-keyword">return</span> result.features.map(feature <span class="token-operator">=&gt;</span> ({
-    <span class="token-property">value</span>: <span class="token-string">`${feature.properties.osm_type}/${feature.properties.osm_id}`</span>,
-    <span class="token-property">label</span>: [feature.properties.name, feature.properties.country].filter(Boolean).join(<span class="token-string">', '</span>),
-    <span class="token-property">city</span>: feature.properties.name,
-    <span class="token-property">countryCode</span>: feature.properties.countrycode,
-    <span class="token-property">latitude</span>: feature.geometry.coordinates[<span class="token-number">1</span>],
-    <span class="token-property">longitude</span>: feature.geometry.coordinates[<span class="token-number">0</span>],
-  }))
+  <span class="token-keyword">return</span> result.features.map(feature <span class="token-operator">=&gt;</span> {
+    <span class="token-keyword">const</span> place = feature.properties
+    <span class="token-keyword">return</span> {
+      <span class="token-property">value</span>: <span class="token-string">`${place.osm_type}/${place.osm_id}`</span>,
+      <span class="token-property">label</span>: formatCityLabel(place),
+      <span class="token-property">city</span>: place.name,
+      <span class="token-property">department</span>: place.county,
+      <span class="token-property">region</span>: place.state,
+      <span class="token-property">country</span>: place.country,
+      <span class="token-property">countryCode</span>: place.countrycode,
+      <span class="token-property">latitude</span>: feature.geometry.coordinates[<span class="token-number">1</span>],
+      <span class="token-property">longitude</span>: feature.geometry.coordinates[<span class="token-number">0</span>],
+    }
+  })
 }</code></pre>
                     <footer slot="footer">
                         <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
@@ -343,16 +377,37 @@ field.addEventListener(<span class="token-string">'wa-clear'</span>, renderFlags
             <article class="demo-card">
                 <p class="eyebrow">SVG and PNG icons · local and remote URLs</p>
                 <h3>Combine icon sources</h3>
+                <p class="section-intro">Choose from these four places. Each one demonstrates a different icon source; selected places appear in the field and in the list below.</p>
+                <div class="available-choices" aria-label="Available places">
+                    <p class="eyebrow">Available places</p>
+                    <ul>
+                        <li><strong>Compass route</strong><span>Local SVG file</span></li>
+                        <li><strong>Historic landmark</strong><span>Web Awesome icon</span></li>
+                        <li><strong>Old town</strong><span>Local SVG file</span></li>
+                        <li><strong>France</strong><span>Remote FlagCDN SVG</span></li>
+                    </ul>
+                </div>
                 <lgs1920-autocomplete id="icon-source-autocomplete" name="place" multiple label="Places" icon-position="start" max-options-visible="2" placeholder="Choose a place" with-clear></lgs1920-autocomplete>
-                <p class="section-intro">This list combines a Web Awesome icon, local SVG files, and a remote SVG URL. The same icons appear in suggestions and selected tags. The code also shows how a Vite glob can load a directory of SVG or PNG files.</p>
-                <wa-details summary="View response">
-                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="icon-source-autocomplete-selection">Nothing selected</code></pre>
+                <wa-details summary="Selected places">
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="icon-source-autocomplete-selection">No places selected</code></pre>
                 </wa-details>
                 <wa-button appearance="outlined" size="s" data-dialog="open icon-source-example-dialog">View example code</wa-button>
                 <wa-dialog id="icon-source-example-dialog" class="example-code-dialog" label="Example code: Combine icon sources" with-footer>
                     <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
                     <p class="eyebrow">HTML</p>
-                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"icon-source-autocomplete"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"place"</span> <span class="token-attribute">multiple</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"Places"</span> <span class="token-attribute">icon-position</span>=<span class="token-attribute-value">"start"</span> <span class="token-attribute">max-options-visible</span>=<span class="token-attribute-value">"2"</span> <span class="token-attribute">with-clear</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">div</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"available-choices"</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;</span><span class="token-tag">p</span><span class="token-punctuation">&gt;</span>Available places<span class="token-punctuation">&lt;/</span><span class="token-tag">p</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;</span><span class="token-tag">ul</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">li</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;</span>Compass route<span class="token-punctuation">&lt;/</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">span</span><span class="token-punctuation">&gt;</span>Local SVG file<span class="token-punctuation">&lt;/</span><span class="token-tag">span</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">li</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">li</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;</span>Historic landmark<span class="token-punctuation">&lt;/</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">span</span><span class="token-punctuation">&gt;</span>Web Awesome icon<span class="token-punctuation">&lt;/</span><span class="token-tag">span</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">li</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">li</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;</span>Old town<span class="token-punctuation">&lt;/</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">span</span><span class="token-punctuation">&gt;</span>Local SVG file<span class="token-punctuation">&lt;/</span><span class="token-tag">span</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">li</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">li</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;</span>France<span class="token-punctuation">&lt;/</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">span</span><span class="token-punctuation">&gt;</span>Remote FlagCDN SVG<span class="token-punctuation">&lt;/</span><span class="token-tag">span</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">li</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;/</span><span class="token-tag">ul</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">div</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"icon-source-autocomplete"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"place"</span> <span class="token-attribute">multiple</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"Places"</span> <span class="token-attribute">icon-position</span>=<span class="token-attribute-value">"start"</span> <span class="token-attribute">max-options-visible</span>=<span class="token-attribute-value">"2"</span> <span class="token-attribute">with-clear</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;</span><span class="token-tag">wa-details</span> <span class="token-attribute">summary</span>=<span class="token-attribute-value">"Selected places"</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;</span><span class="token-tag">pre</span> <span class="token-attribute">role</span>=<span class="token-attribute-value">"status"</span> <span class="token-attribute">aria-live</span>=<span class="token-attribute-value">"polite"</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">code</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"icon-source-autocomplete-selection"</span><span class="token-punctuation">&gt;</span>No places selected<span class="token-punctuation">&lt;/</span><span class="token-tag">code</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">pre</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-details</span><span class="token-punctuation">&gt;</span></code></pre>
                     <p class="eyebrow">JavaScript · direct URLs</p>
                     <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#icon-source-autocomplete'</span>)
 field.options = [
@@ -434,7 +489,7 @@ form.addEventListener(<span class="token-string">'submit'</span>, event <span cl
     <section class="content-card" aria-labelledby="quick-start-heading">
         <p class="eyebrow">Quick start</p>
         <h2 id="quick-start-heading">Add the field, then provide its options</h2>
-        <p>The HTML declares the initial choices with <code>&lt;wa-option&gt;</code> elements. JavaScript appends Lyon through <code>field.options</code>, showing how to update the list in code. It also remembers recent choices and handles selection and form submission.</p>
+        <p>In a bundled project, the HTML declares initial choices with <code>&lt;wa-option&gt;</code> elements. JavaScript appends Lyon through <code>field.options</code>, showing how to update the list in code. It also remembers recent choices and handles selection and form submission.</p>
         <div class="quick-start-examples wa-grid wa-gap-l">
             <div>
                 <p class="eyebrow">HTML · index.html</p>
