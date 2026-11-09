@@ -16,21 +16,57 @@ Every option needs a string or numeric `value` (or the `valeur` alias) and a str
 
 The same `icon` property works for local options and objects returned by a remote `searchOptions` provider. Map an API image URL to `icon: {src: item.iconUrl, fallback: item.iconEmoji}`. A bundler glob is resolved by the host application; pass its output URL to `src`. Other properties, such as `department` or `region`, are preserved as metadata on the selected option.
 
-Static options can also be declared as direct `<wa-option>` children. The `value` attribute supplies the submitted value; `label` or trimmed text content supplies the label. Use `data-icon` for an icon and other `data-*` attributes for string metadata. When the component connects, it reads these children as its initial options. Assigning `field.options` replaces them and remains available for options built or fetched in JavaScript.
+### HTML mode: direct `<wa-option>` children
+
+Declare static choices as direct `<wa-option>` children. The `value` attribute supplies the submitted value; `label` or trimmed text content supplies the visible label. Use `data-icon` for an icon and other `data-*` attributes for string metadata. Dashed metadata names become camel-case option keys.
 
 ```html
 <lgs1920-autocomplete label="City" name="city">
-  <wa-option value="paris" data-icon="location-dot" data-department="75">Paris</wa-option>
+  <wa-option value="paris" data-icon="location-dot" data-department="75" data-region="Île-de-France" data-country="France">Paris</wa-option>
 </lgs1920-autocomplete>
 ```
 
+### JavaScript mode: `field.options`
+
+Set `field.options` to an array when choices are generated or managed by JavaScript. This replaces any direct `<wa-option>` children on that field. The selected option keeps its extra metadata.
+
+```html
+<lgs1920-autocomplete id="js-city-search" label="City" name="city"></lgs1920-autocomplete>
+```
+
 ```js
+const field = document.querySelector('#js-city-search')
 field.options = [
-  {value: 'paris', label: 'Paris', icon: 'location-dot'},
+  {value: 'paris', label: 'Paris', icon: 'location-dot', department: '75', region: 'Île-de-France', country: 'France'},
   {value: 'home', label: 'Home', icon: '/assets/icons/home.svg'},
   {value: 'rocket', label: 'Rocket', icon: {name: 'rocket', family: 'classic', variant: 'solid'}},
   {value: 'france', label: 'France', icon: {src: 'https://flagcdn.io/fr.svg', fallback: '🇫🇷'}},
 ]
+```
+
+### Custom suggestion content
+
+Set `renderOption` to a synchronous `(option, {query})` callback that returns a fresh DOM `Node` for each suggestion. It replaces the default suggestion label rendering; `option.label` remains the search text, selected input text, and accessible option name. Option icons still follow `icon-position`. Return non-interactive content so listbox keyboard behavior remains predictable.
+
+```js
+field.renderOption = option => {
+  const card = document.createElement('wa-card')
+  card.setAttribute('appearance', 'outlined')
+
+  for (const [label, value] of [
+    ['City', option.city],
+    ['Department', option.department],
+    ['Region', option.region],
+    ['Country', option.country],
+  ]) {
+    if (!value) continue
+    const line = document.createElement('div')
+    line.textContent = `${label}: ${value}`
+    card.append(line)
+  }
+
+  return card
+}
 ```
 
 For a remote search, map the API's image field to an image descriptor. Fallback text is optional:
@@ -88,7 +124,7 @@ Like `<wa-select>`, the component exposes `start` and `end` slots for content in
 
 The component uses a Web Awesome input for its label and query. As a form-associated custom element, it submits the selected option's `value` under the host's `name`. Typed text is never submitted as a selection.
 
-With `multiple`, `value` is an array and each selected value is submitted under the same `name`. Typing keeps existing selections; choosing an option clears the query for the next choice. The placeholder is hidden until all tags are removed. Five selected tags are shown inline by default. The `+N` control opens the full selection list, 10 items per page. Set `max-options-visible` to change the inline limit, or to `0` to show every tag inline.
+With `multiple`, `value` is an array and each selected value is submitted under the same `name`. Typing keeps existing selections. Adding an option clears the current query and keeps the panel open. Local search shows the complete list; remote search keeps its current results available until the next query. The placeholder is hidden until all tags are removed. Five selected tags are shown inline by default. The `+N` control opens the full selection list, 10 items per page. Set `max-options-visible` to change the inline limit, or to `0` to show every tag inline.
 
 `selectedOptions` returns the selected option objects. Selected items appear as removable `<wa-tag>` elements. If an option has an icon, `icon-position` places it before or after its label in suggestions and selected tags.
 
@@ -98,11 +134,13 @@ The host forwards the Web Awesome input attributes `label`, `placeholder`, `disa
 
 ## Search behavior
 
-With `options`, the component filters labels and values using case-insensitive substring matching. Matching label text is highlighted. An empty query shows recent selections when available; otherwise, the panel stays closed. With an empty query, the disclosure button opens the complete local list. If recent selections are showing, it replaces them with that list; activate it again to close the panel. In multiple mode, options can be toggled while the list stays open.
+With `options`, the component filters labels and values using case-insensitive substring matching. Matching label text is highlighted. An empty query shows recent selections when available; otherwise, the panel stays closed. With an empty query, the disclosure button opens the complete local list. If recent selections are showing, it replaces them with that list; activate it again to close the panel. In multiple mode, adding an option clears the filter and keeps the list open. Local search expands to the complete list; remote search keeps the current results available until the next query.
+
+Visible suggestions use Web Awesome `<wa-option>` elements inside the component's listbox. The component manages their active and selected states, keyboard navigation, and pagination.
 
 Setting the JavaScript `searchOptions` property enables remote search. The callback receives the query and an `{signal}` object, and must return an array of options. Searches require one character by default. Set `min-chars="0"` to allow any non-empty query length; the provider is never called for an empty query. By default, the callback runs after `150` milliseconds without new input. Each keystroke restarts the delay and aborts an older request. Search does not wait for Enter or blur. A failed current request emits `wa-search-error`.
 
-`max-results` caps filtered local and remote results at `50` by default. The complete local list is not capped. `page-size` defaults to `10` items per page for suggestions. Both settings accept HTML attributes or JavaScript properties (`maxResults` and `pageSize`). Pagination shows the current result range and page controls when more than one page is available.
+`max-results` caps filtered local and remote results at `50` by default. The complete local list is not capped. `page-size` defaults to `10` items per page for suggestions. Both settings accept HTML attributes or JavaScript properties (`maxResults` and `pageSize`). When more than one page is available, a compact footer shows the current result range and a compact page counter with previous/next controls. The footer is hidden when all results fit on one page.
 
 ## Recent selections
 
@@ -114,7 +152,7 @@ Use `persistence = {group, limit}` or `{id, group, limit}` to share history betw
 
 The component emits standard `input`, `change`, `focus`, and `blur` events. Read the typed text from `query` and the selected raw value from `value`. Activating either clear control emits `wa-clear`.
 
-`wa-select` includes `{option, value, label, selectedOptions}`. In multiple mode, `value` is an array. Removing a selection emits `wa-deselect` with the same detail shape and the updated selection. `wa-search-error` includes `{error, query}`. `wa-persistence-error` includes `{error, action, id, group?}`; for a group-only configuration, `id` contains the group name. Component `wa-*` events bubble and cross the shadow boundary.
+`wa-select` includes `{option, value, label, selectedOptions}`. In multiple mode, `value` is an array. Removing a selection emits `wa-deselect` with the same detail shape and the updated selection. `wa-search-error` includes `{error, query}`. `wa-option-render-error` includes `{error, option}` when a custom renderer fails; the suggestion falls back to its default label view. `wa-persistence-error` includes `{error, action, id, group?}`; for a group-only configuration, `id` contains the group name. Component `wa-*` events bubble and cross the shadow boundary.
 
 ## Accessibility and lifecycle
 

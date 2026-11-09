@@ -14,7 +14,9 @@ With Bun, use `bun add @lgs1920/autocomplete @awesome.me/webawesome`.
 
 ## Quick start
 
-Add the element to your page:
+### HTML options
+
+Use direct `<wa-option>` children when the choices are static:
 
 ```html
 <lgs1920-autocomplete id="city-search" label="City" name="city" placeholder="Search cities" with-clear>
@@ -23,17 +25,23 @@ Add the element to your page:
 </lgs1920-autocomplete>
 ```
 
-Load Web Awesome's base and theme styles, then provide local options or an asynchronous search function:
+### JavaScript options
+
+For a JavaScript-managed list, use an empty element and assign an array to `field.options`. That assignment replaces any `<wa-option>` children on the same element.
+
+```html
+<lgs1920-autocomplete id="city-search-js" label="City" name="city" placeholder="Search cities" with-clear></lgs1920-autocomplete>
+```
 
 ```js
 import '@awesome.me/webawesome/dist/styles/webawesome.css'
 import '@awesome.me/webawesome/dist/styles/themes/default.css'
 import '@lgs1920/autocomplete'
 
-const field = document.querySelector('#city-search')
+const field = document.querySelector('#city-search-js')
 field.options = [
-  ...field.options,
-  {value: 'lyon', label: 'Lyon', icon: 'location-dot', department: '69', region: 'Auvergne-Rhône-Alpes'},
+  {value: 'paris', label: 'Paris', icon: 'location-dot', department: '75', region: 'Île-de-France', country: 'France'},
+  {value: 'reims', label: 'Reims', icon: 'city', department: '51', region: 'Grand Est', country: 'France'},
 ]
 
 field.addEventListener('wa-select', event => {
@@ -49,6 +57,31 @@ Declare static choices as direct `<wa-option>` children or set `field.options` t
 
 The component filters `label` and `value` with case-insensitive substring matching and highlights matching text in labels. When the query is empty, saved recent selections appear as suggestions if any exist. If no history exists, the panel stays closed until the chevron opens the complete local list; when recent suggestions are open, the chevron replaces them with that list. `page-size` controls the number of suggestions on each page.
 
+Visible suggestions are rendered as Web Awesome `<wa-option>` elements inside the component's listbox. The component manages their active and selected states alongside its keyboard navigation and pagination.
+
+For richer suggestion layouts, set `renderOption` to a synchronous `(option, {query})` function that returns a fresh DOM node. The option's `label` still supplies search text, selected input text, and the accessible option name; the custom renderer replaces the default label and query highlighting. Option icons still follow `icon-position`. Keep custom suggestion content non-interactive.
+
+```js
+field.renderOption = option => {
+  const card = document.createElement('wa-card')
+  card.setAttribute('appearance', 'outlined')
+
+  for (const [label, value] of [
+    ['City', option.city],
+    ['Department', option.department],
+    ['Region', option.region],
+    ['Country', option.country],
+  ]) {
+    if (!value) continue
+    const line = document.createElement('div')
+    line.textContent = `${label}: ${value}`
+    card.append(line)
+  }
+
+  return card
+}
+```
+
 ### Remote search
 
 Assign an asynchronous `searchOptions(query, {signal})` function. It receives the current query and an `AbortSignal`, and must return an array of options. Searches start after one character by default and wait `150` milliseconds after the latest keystroke. Set `min-chars="0"` to allow any non-empty query length; the provider is never called for an empty query. New input restarts the delay and aborts stale requests.
@@ -61,11 +94,11 @@ field.searchOptions = async (query, {signal}) => {
 }
 ```
 
-Filtered local and remote results are capped by `max-results` (default `50`). The complete local list opened by the disclosure chevron includes every option. Suggestions use `page-size` (default `10`), and the pagination footer reports the current result range.
+Filtered local and remote results are capped by `max-results` (default `50`). The complete local list opened by the disclosure chevron includes every option. Suggestions use `page-size` (default `10`). When results span multiple pages, a compact footer shows the current result range and a compact page counter with previous/next controls.
 
 ## Multiple selection
 
-Add `multiple` to let users select several options. The `value` property becomes an array, and `selectedOptions` contains the full option objects. After each choice, the query clears and the placeholder stays hidden while tags remain selected. In a form, each selected value is submitted under the same `name`.
+Add `multiple` to let users select several options. The `value` property becomes an array, and `selectedOptions` contains the full option objects. Adding an option clears the current query and keeps the panel open. Local search shows the complete list; remote search keeps its current results available until the next query. The placeholder stays hidden while tags remain selected. In a form, each selected value is submitted under the same `name`.
 
 Five tags are shown by default. Additional selections appear behind a `+N` control; activating it opens the full selection list, paginated 10 selections per page. Set `max-options-visible` to change the inline tag count, or to `0` to show every tag inline.
 
@@ -137,7 +170,7 @@ field.options = [{value: 'custom', label: 'Custom', icon: {src: blobUrl}}]
 
 Each option requires a string or numeric `value` and a string `label`. `valeur` is accepted as an alias for `value`. Additional properties, such as `department`, remain on the selected option and are included in selection events.
 
-The component exposes `value`, `query`, `selectedOption`, and `selectedOptions`. Read the typed text from `event.target.query`; use `selectedOption` for single selection and `selectedOptions` for multiple selection. `wa-select` fires when a suggestion is selected. In multiple mode, `wa-deselect` fires when an item is removed. Both events include the option metadata in `event.detail.option`.
+The component exposes `value`, `query`, `selectedOption`, and `selectedOptions`. Read the typed text from `event.target.query`; use `selectedOption` for single selection and `selectedOptions` for multiple selection. `wa-select` fires when a suggestion is selected. In multiple mode, `wa-deselect` fires when an item is removed. Both events include the option metadata in `event.detail.option`. If `renderOption` throws or returns something other than a DOM node, `wa-option-render-error` includes `{error, option}` and the suggestion falls back to its default label.
 
 Standard `input`, `change`, `focus`, and `blur` events are available on the component. The `with-clear` attribute adds an accessible query-clear button; in multiple mode, a separate clear-all button removes selected tags. Activating either clear control emits `wa-clear`.
 

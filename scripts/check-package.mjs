@@ -8,7 +8,7 @@
  * email: studio@lgs1920.fr
  *
  * Created on: 2026-11-08
- * Last modified: 2026-11-08
+ * Last modified: 2026-11-09
  *
  *
  * Copyright © 2026 LGS1920
@@ -46,6 +46,8 @@ if (!consumerSource.includes('this.#showAllOptions = true') || !consumerSource.i
 }
 
 const componentStyles = await Bun.file(resolve(projectRoot, 'src/autocomplete.css')).text()
-if (!/\.pagination,\s*\.selected-pagination\s*\{\s*display:\s*block;\s*inline-size:\s*100%;/u.test(componentStyles)) {
-    throw new Error('Pagination controls must occupy the full width of their panel')
+if (!/\.pagination-controls\s*\{[^}]*display:\s*flex;[^}]*justify-content:\s*center;/u.test(componentStyles)
+    || !/\.pagination\s*\{\s*display:\s*block;\s*min-inline-size:\s*0;/u.test(componentStyles)
+    || !/\.selected-pagination\s*\{\s*display:\s*block;\s*inline-size:\s*100%;/u.test(componentStyles)) {
+    throw new Error('Pagination controls must remain centered in their footer and fill the selected-options panel')
 }

@@ -40,8 +40,11 @@
     height: auto;
     min-height: var(--wa-form-control-height);
     flex-wrap: wrap;
-    row-gap: var(--wa-space-2xs);
-    padding-block: var(--wa-space-2xs);
+    /* Keep wrapped tags on the same 0.25em rhythm as Web Awesome's multi-select tags. */
+    row-gap: 0.25em;
+    /* Match Web Awesome's inset when a multiple-select control contains tags. */
+    padding-block: calc(var(--wa-form-control-height) * 0.1 - var(--wa-form-control-border-width));
+    padding-inline-start: calc(var(--wa-form-control-height) * 0.1 - var(--wa-form-control-border-width));
 }
 
 .input.multiple.has-selection::part(start) {
@@ -49,7 +52,22 @@
     flex-wrap: wrap;
     align-items: center;
     box-sizing: border-box;
-    padding-inline-end: calc(var(--wa-form-control-padding-inline) + 6.5rem);
+    /* Reserve space for the compact disclosure control. */
+    padding-inline-end: calc(var(--wa-space-l) + var(--wa-space-2xs));
+}
+
+.input.multiple.has-selection.has-clear-selection::part(start) {
+    /* Add space when the clear control is visible. */
+    padding-inline-end: calc(2 * var(--wa-space-l) + 2 * var(--wa-space-2xs));
+}
+
+.input.multiple.has-selection.has-overflow-selection::part(start) {
+    /* Reserve the overflow count width only when hidden tags need a summary. */
+    padding-inline-end: calc(var(--wa-space-3xl) + var(--wa-space-l) + 2 * var(--wa-space-2xs));
+}
+
+.input.multiple.has-selection.has-clear-selection.has-overflow-selection::part(start) {
+    padding-inline-end: calc(var(--wa-space-3xl) + 2 * var(--wa-space-l) + 3 * var(--wa-space-2xs));
 }
 
 .input.multiple.has-selection::part(end) {
@@ -63,7 +81,8 @@
     flex: 1 1 auto;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--wa-space-2xs);
+    /* Match the wrap gap used by Web Awesome's multi-select tags. */
+    gap: 0.25em;
     max-inline-size: 100%;
 }
 
@@ -74,18 +93,35 @@
     display: none;
 }
 
+.end-actions {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--wa-space-2xs);
+    margin-inline-end: calc(var(--wa-space-xs) - var(--wa-form-control-padding-inline));
+}
+
+.end-actions wa-button::part(button) {
+    inline-size: var(--wa-space-l);
+    block-size: var(--wa-space-l);
+    padding: 0;
+    color: var(--wa-color-text-link);
+    background-color: transparent;
+}
+
+.end-actions wa-button::part(button):hover {
+    color: color-mix(in oklab, var(--wa-color-text-link), var(--wa-color-mix-hover));
+    background-color: transparent;
+    transform: none;
+}
+
 .selected-tags wa-tag {
     box-sizing: border-box;
-    flex: 0 1 auto;
-    min-inline-size: 0;
-    max-inline-size: 100%;
+    flex: none;
 }
 
 .selected-tags wa-tag::part(content) {
-    flex: 1 1 auto;
-    min-inline-size: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: none;
     white-space: nowrap;
 }
 
@@ -95,8 +131,9 @@
 
 .selection-actions {
     display: inline-flex;
+    flex: none;
     align-items: center;
-    gap: var(--wa-space-xs);
+    gap: var(--wa-space-2xs);
 }
 
 .selected-count {
@@ -132,26 +169,50 @@
 }
 
 .panel {
-    display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     /* Controls the maximum height of the suggestion panel. */
     max-block-size: var(--lgs1920-autocomplete-max-height, 16rem);
 }
 
-.listbox {
-    overflow: auto;
-    min-block-size: 0;
-    padding: var(--wa-space-2xs);
+.message {
+    flex: none;
 }
 
-.pagination,
-.selected-pagination {
+.listbox {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    /* Match Web Awesome's option-list gap and inset. */
+    gap: 0.125em;
+    overflow: auto;
+    min-block-size: 0;
+    padding: 0.25em;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25em;
+}
+
+.pagination-controls[hidden] {
+    display: none;
+}
+
+.pagination {
     display: block;
-    inline-size: 100%;
+    min-inline-size: 0;
 }
 
 .pagination::part(pagination) {
     justify-content: center;
+}
+
+.selected-pagination {
+    display: block;
+    inline-size: 100%;
 }
 
 .selected-popup {
@@ -196,15 +257,11 @@
 
 .selected-list wa-tag {
     box-sizing: border-box;
-    min-inline-size: 0;
     justify-self: start;
-    max-inline-size: 100%;
 }
 
 .selected-list wa-tag::part(content) {
-    min-inline-size: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex: none;
     white-space: nowrap;
 }
 
@@ -217,42 +274,43 @@
 }
 
 .option {
-    display: flex;
-    align-items: center;
-    gap: var(--wa-space-s);
-    min-block-size: var(--wa-form-control-height, var(--wa-space-xl));
-    padding-inline: var(--wa-space-s);
-    border-radius: var(--wa-border-radius-s);
-    /* Override option text color independently from the panel and page text. */
-    color: var(--lgs1920-autocomplete-option-color, var(--wa-color-text-normal));
-    cursor: pointer;
-
-    &[data-active="true"] {
-        outline: var(--wa-focus-ring-width) solid var(--wa-color-focus);
-        outline-offset: calc(-1 * var(--wa-focus-ring-width));
-        /* Override the keyboard-active option background. */
-        background: var(--lgs1920-autocomplete-option-active-background, var(--wa-color-neutral-fill-quiet));
-    }
-
-    &[aria-selected="true"] {
-        /* Override the selected option background. */
-        background: var(--lgs1920-autocomplete-option-selected-background, var(--wa-color-brand-fill-quiet));
-        /* Override selected option text while keeping the default theme contrast pairing. */
-        color: var(--lgs1920-autocomplete-option-selected-color, var(--wa-color-brand-on-quiet));
-    }
-
-    &:hover {
-        /* Override the pointer-hover option background. */
-        background: var(--lgs1920-autocomplete-option-hover-background, var(--wa-color-neutral-fill-quiet));
-    }
+    flex: none;
+    /* Keep Web Awesome option states aligned with the component's theme-aware tokens. */
+    --wa-color-neutral-fill-normal: var(--lgs1920-autocomplete-option-hover-background, var(--wa-color-neutral-fill-quiet));
+    --wa-color-neutral-on-normal: var(--lgs1920-autocomplete-option-color, var(--wa-color-text-normal));
+    --wa-form-control-activated-color: var(--lgs1920-autocomplete-option-active-background, var(--wa-color-neutral-fill-quiet));
+    --current-text-color: var(--lgs1920-autocomplete-option-active-color, var(--wa-color-text-normal));
 }
 
-.option-label {
+.option[data-active="true"] {
+    outline: var(--wa-focus-ring-width) solid var(--wa-color-focus);
+    outline-offset: calc(-1 * var(--wa-focus-ring-width));
+}
+
+.option[aria-selected="true"] {
+    /* Override the selected option background and foreground independently from the theme. */
+    background: var(--lgs1920-autocomplete-option-selected-background, var(--wa-color-brand-fill-quiet));
+    color: var(--lgs1920-autocomplete-option-selected-color, var(--wa-color-brand-on-quiet));
+}
+
+.option:hover {
+    background: var(--lgs1920-autocomplete-option-hover-background, var(--wa-color-neutral-fill-quiet));
+}
+
+.option-custom {
+    align-items: stretch;
+    padding: var(--wa-space-2xs);
+}
+
+.option-custom > wa-card {
     flex: 1;
     min-inline-size: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* Keep custom suggestion cards compact inside the listbox. */
+    --spacing: var(--wa-space-xs);
+}
+
+.option-custom > .option-icon {
+    align-self: center;
 }
 
 .option-match {

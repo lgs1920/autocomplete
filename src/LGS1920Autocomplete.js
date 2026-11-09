@@ -38,6 +38,10 @@ import {readOptionsFromMarkup} from './options-from-markup.js'
  * @typedef {(query: string, context: {signal: AbortSignal}) => Promise<AutocompleteOption[]>} AutocompleteSearch
  */
 
+/**
+ * @typedef {(option: AutocompleteOption, context: {query: string}) => Node} AutocompleteOptionRenderer
+ */
+
 let nextInstanceId = 0
 const selectedOptionsPageSize = 10
 
@@ -111,6 +115,7 @@ export class LGS1920Autocomplete extends HTMLElement {
     #disclosureIcon
     #popup
     #listbox
+    #paginationControls
     #pagination
     #selectedTags
     #selectionActions
@@ -121,6 +126,7 @@ export class LGS1920Autocomplete extends HTMLElement {
     #selectedPagination
     #internals
     #message
+    #optionsObserver = null
     #options = []
     #optionsProvidedByHost = false
     #results = []
@@ -134,9 +140,16 @@ export class LGS1920Autocomplete extends HTMLElement {
     #showAllOptions = false
     #selectedPage = 1
     #searchOptions = null
+    #renderOption = null
     #timer = 0
     #controller = null
     #requestSequence = 0
+
+    /** Synchronize static option children until JavaScript explicitly sets options. */
+    #syncMarkupOptions = () => {
+        if (this.#optionsProvidedByHost) return
+        this.#applyNormalizedOptions(normalizeOptions(readOptionsFromMarkup(this)))
+    }
 
     /** Handle edits to the visible query. */
     #onInput = event => {
@@ -343,15 +356,17 @@ export class LGS1920Autocomplete extends HTMLElement {
                 <slot name="start" slot="start"></slot>
                 <div class="selected-tags" slot="start" hidden></div>
                 <slot name="end" slot="end"></slot>
-                <div class="selection-actions" slot="end" hidden>
-                    <wa-tag class="selected-count" role="button" tabindex="0" aria-expanded="false" hidden></wa-tag>
-                    <wa-button class="clear-selection" type="button" appearance="plain" size="s" aria-label="Clear selected options" hidden>
-                        <wa-icon name="circle-xmark" library="system" variant="regular" aria-hidden="true"></wa-icon>
+                <div class="end-actions" slot="end">
+                    <div class="selection-actions" hidden>
+                        <wa-tag class="selected-count" size="s" role="button" tabindex="0" aria-expanded="false" hidden></wa-tag>
+                        <wa-button class="clear-selection" type="button" appearance="plain" size="xs" hidden>
+                            <wa-icon name="circle-xmark" library="system" variant="regular" label="Clear selected options"></wa-icon>
+                        </wa-button>
+                    </div>
+                    <wa-button class="disclosure" type="button" appearance="plain" size="xs">
+                        <wa-icon class="disclosure-icon" name="chevron-down" label="Show options"></wa-icon>
                     </wa-button>
                 </div>
-                <wa-button class="disclosure" slot="end" type="button" appearance="plain" size="s" aria-label="Show options" aria-haspopup="listbox" aria-expanded="false">
-                    <wa-icon class="disclosure-icon" name="chevron-down" aria-hidden="true"></wa-icon>
-                </wa-button>
             </wa-input>
             <wa-popup class="selected-popup" placement="bottom-end" distance="4" flip shift>
                 <wa-card class="selected-card">
@@ -365,7 +380,9 @@ export class LGS1920Autocomplete extends HTMLElement {
                 <div class="panel">
                     <div class="message" role="status" aria-live="polite" hidden></div>
                     <div class="listbox" role="listbox"></div>
-                    <wa-pagination class="pagination" appearance="plain" format="compact" hide-single-page with-summary label="Suggestion pages"></wa-pagination>
+                    <div class="pagination-controls" hidden>
+                        <wa-pagination class="pagination" appearance="plain" format="compact" hide-single-page with-summary label="Suggestion pages"></wa-pagination>
+                    </div>
                 </div>
             </wa-popup>
         `
@@ -376,6 +393,7 @@ export class LGS1920Autocomplete extends HTMLElement {
         this.#disclosureIcon = root.querySelector('.disclosure-icon')
         this.#popup = root.querySelector('.popup')
         this.#listbox = root.querySelector('.listbox')
+        this.#paginationControls = root.querySelector('.pagination-controls')
         this.#pagination = root.querySelector('.pagination')
         this.#selectedTags = root.querySelector('.selected-tags')
         this.#selectionActions = root.querySelector('.selection-actions')
@@ -413,17 +431,24 @@ export class LGS1920Autocomplete extends HTMLElement {
      * Attach document listeners and synchronize Web Awesome attributes.
      */
     connectedCallback() {
-        if (!this.#optionsProvidedByHost) this.#options = normalizeOptions(readOptionsFromMarkup(this))
+        if (!this.#optionsProvidedByHost) {
+            this.#syncMarkupOptions()
+            this.#optionsObserver ??= new MutationObserver(this.#syncMarkupOptions)
+            this.#optionsObserver.observe(this, {childList: true, subtree: true})
+        }
         this.#syncAttributes()
         document.addEventListener('pointerdown', this.#onOutsidePointerdown, true)
         document.addEventListener('focusin', this.#onOutsideFocus, true)
         this.#input.updateComplete.then(() => this.#syncAria())
+        this.#disclosureButton.updateComplete.then(() => this.#syncAria())
     }
 
     /**
      * Release pending work and document listeners when the element disconnects.
      */
     disconnectedCallback() {
+        this.#optionsObserver?.disconnect()
+        this.#optionsObserver = null
         document.removeEventListener('pointerdown', this.#onOutsidePointerdown, true)
         document.removeEventListener('focusin', this.#onOutsideFocus, true)
         this.#cancelSearch()
@@ -504,7 +529,17 @@ export class LGS1920Autocomplete extends HTMLElement {
     set options(options) {
         const normalizedOptions = normalizeOptions(options)
         this.#optionsProvidedByHost = true
-        this.#options = normalizedOptions
+        this.#optionsObserver?.disconnect()
+        this.#applyNormalizedOptions(normalizedOptions)
+    }
+
+    /**
+     * Apply validated options and keep any current selection aligned with them.
+     *
+     * @param {AutocompleteOption[]} options - Validated option data.
+     */
+    #applyNormalizedOptions(options) {
+        this.#options = options
         if (!this.#searchOptions && this.multiple && this.#selectedOptions.length) {
             this.#selectedOptions = this.#selectedOptions.map(selectedOption => this.#options.find(option => String(option.value) === String(selectedOption.value)) ?? selectedOption)
             this.#syncFormValue()
@@ -525,6 +560,28 @@ export class LGS1920Autocomplete extends HTMLElement {
      */
     get options() {
         return [...this.#options]
+    }
+
+    /**
+     * Set a synchronous renderer for suggestion content.
+     *
+     * @param {AutocompleteOptionRenderer|null} renderer - Renderer callback, or null to restore the default label view.
+     */
+    set renderOption(renderer) {
+        if (renderer !== null && typeof renderer !== 'function') {
+            throw new TypeError('renderOption must be a function or null')
+        }
+        this.#renderOption = renderer
+        if (this.#results.length) this.#renderOptions()
+    }
+
+    /**
+     * Get the custom suggestion renderer.
+     *
+     * @returns {AutocompleteOptionRenderer|null} Current suggestion renderer.
+     */
+    get renderOption() {
+        return this.#renderOption
     }
 
     /**
@@ -1043,6 +1100,7 @@ export class LGS1920Autocomplete extends HTMLElement {
             this.#selectedTags.hidden = true
             this.#selectedCountTag.hidden = true
             this.#clearSelectionButton.hidden = true
+            this.#input.classList.remove('has-clear-selection', 'has-overflow-selection')
             this.#selectionActions.hidden = true
             this.#closeSelectedOptions()
             this.#selectedList.replaceChildren()
@@ -1076,6 +1134,8 @@ export class LGS1920Autocomplete extends HTMLElement {
             this.#selectedCountTag.setAttribute('aria-label', `Show selected options (${this.#selectedOptions.length} total)`)
         }
         this.#clearSelectionButton.hidden = !this.withClear || this.disabled || this.#formDisabled
+        this.#input.classList.toggle('has-clear-selection', !this.#clearSelectionButton.hidden)
+        this.#input.classList.toggle('has-overflow-selection', hiddenCount > 0)
         this.#selectionActions.hidden = this.#selectedCountTag.hidden && this.#clearSelectionButton.hidden
         if (hiddenCount === 0 || this.disabled || this.#formDisabled) this.#closeSelectedOptions()
         else if (this.#selectedPopup.active) this.#renderSelectedOptions()
@@ -1119,7 +1179,7 @@ export class LGS1920Autocomplete extends HTMLElement {
     }
 
     /**
-     * Set combobox semantics on Web Awesome's native input element.
+     * Synchronize ARIA state on the input and disclosure control.
      */
     #syncAria() {
         const recentListCanExpand = this.#isOpen()
@@ -1129,10 +1189,15 @@ export class LGS1920Autocomplete extends HTMLElement {
             && !(this.#input.value ?? '').trim()
             && this.#recentOptions.length > 0
         const fullListVisible = this.#isOpen() && !recentListCanExpand
-        this.#disclosureButton.setAttribute('aria-controls', this.#listbox.id)
-        this.#disclosureButton.setAttribute('aria-expanded', String(this.#isOpen()))
-        this.#disclosureButton.setAttribute('aria-label', recentListCanExpand ? 'Show all options' : this.#isOpen() ? 'Hide options' : 'Show options')
+        const disclosureLabel = recentListCanExpand ? 'Show all options' : this.#isOpen() ? 'Hide options' : 'Show options'
+        this.#disclosureIcon.setAttribute('label', disclosureLabel)
         this.#disclosureIcon.setAttribute('name', fullListVisible ? 'chevron-up' : 'chevron-down')
+        const disclosureButton = this.#disclosureButton.button
+        if (disclosureButton) {
+            disclosureButton.setAttribute('aria-controls', this.#listbox.id)
+            disclosureButton.setAttribute('aria-expanded', String(this.#isOpen()))
+            disclosureButton.setAttribute('aria-haspopup', 'listbox')
+        }
         const input = this.#input.input
         if (!input) return
         input.setAttribute('role', 'combobox')
@@ -1257,31 +1322,55 @@ export class LGS1920Autocomplete extends HTMLElement {
         this.#listbox.replaceChildren()
         const pageCount = Math.max(1, Math.ceil(this.#results.length / this.pageSize))
         this.#page = Math.min(this.#page, pageCount)
+        this.#paginationControls.hidden = this.#results.length <= this.pageSize
         this.#pagination.pageSize = this.pageSize
         this.#pagination.total = this.#results.length
         this.#pagination.page = this.#page
-        this.#pagination.hidden = this.#results.length <= this.pageSize
 
         const pageOffset = (this.#page - 1) * this.pageSize
         this.#results.slice(pageOffset, pageOffset + this.pageSize).forEach((option, pageIndex) => {
             const index = pageOffset + pageIndex
-            const element = document.createElement('div')
+            const element = document.createElement('wa-option')
             element.id = `${this.#listbox.id}-option-${index}`
             element.className = 'option'
             element.dataset.index = String(index)
-            element.setAttribute('role', 'option')
-            element.setAttribute('aria-selected', String(this.#isSelected(option)))
             element.dataset.active = String(index === this.#activeIndex)
-
-            const label = document.createElement('span')
-            label.className = 'option-label'
-            this.#renderHighlightedLabel(label, option.label)
+            element.value = String(option.value)
+            element.label = option.label
+            element.selected = this.#isSelected(option)
+            element.current = index === this.#activeIndex
 
             const icon = this.#createIcon(option.icon)
-            if (icon && this.iconPosition === 'start') element.append(icon)
-            element.append(label)
-            if (icon && this.iconPosition === 'end') element.append(icon)
+            if (icon) icon.slot = this.iconPosition
+            let content = null
+            if (this.#renderOption) {
+                try {
+                    content = this.#renderOption(option, {
+                        query: this.#showAllOptions ? '' : (this.#input.value ?? '').trim(),
+                    })
+                    const NodeConstructor = this.ownerDocument.defaultView?.Node
+                    if (!NodeConstructor || !(content instanceof NodeConstructor)) {
+                        throw new TypeError('renderOption must return a DOM Node')
+                    }
+                } catch (error) {
+                    content = null
+                    this.#dispatch('wa-option-render-error', {error, option})
+                }
+            }
+
+            if (content) {
+                element.classList.add('option-custom')
+                element.setAttribute('aria-label', option.label)
+                if (icon && this.iconPosition === 'start') element.append(icon)
+                element.append(content)
+                if (icon && this.iconPosition === 'end') element.append(icon)
+            } else {
+                if (icon && this.iconPosition === 'start') element.append(icon)
+                this.#renderHighlightedLabel(element, option.label)
+                if (icon && this.iconPosition === 'end') element.append(icon)
+            }
             this.#listbox.append(element)
+            element.setAttribute('aria-selected', String(this.#isSelected(option)))
         })
         this.#syncAria()
     }
@@ -1401,9 +1490,19 @@ export class LGS1920Autocomplete extends HTMLElement {
             this.#renderSelectedTags()
             if (selected) {
                 if (notify) this.#rememberOption(option)
-                // Keep the selected value while clearing the transient query for the next choice.
+                this.#activeIndex = -1
                 this.#input.value = ''
-                this.#search('')
+                if (this.#searchOptions && this.#isOpen() && this.#results.length) {
+                    this.#cancelSearch()
+                    this.#renderOptions()
+                    this.#setMessage('')
+                } else {
+                    if (!this.#searchOptions && this.#options.length) {
+                        this.#showAllOptions = true
+                        this.#page = 1
+                    }
+                    this.#search('')
+                }
             } else {
                 this.#renderOptions()
             }

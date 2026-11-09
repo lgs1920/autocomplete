@@ -30,15 +30,20 @@ Use the stable `<lgs1920-autocomplete>` element. Set JavaScript properties after
 
 Each option needs a string or numeric `value` and a string `label`. Optional `icon` data can be a Web Awesome icon name or descriptor, an SVG/PNG URL, or an image descriptor with `src`. Preserve consumer metadata on the option; it remains available in `selectedOptions` and selection event details.
 
+For static choices, declare direct `<wa-option>` children. Their `value` attribute is submitted, their `label` attribute or trimmed text content supplies the visible label, `data-icon` supplies an icon, and other `data-*` attributes become string metadata. Assigning `field.options` replaces the markup choices and remains available for data loaded or built in JavaScript.
+
 ```html
-<lgs1920-autocomplete id="city-search" label="City" name="city" placeholder="Search cities" with-clear></lgs1920-autocomplete>
+<lgs1920-autocomplete id="city-search" label="City" name="city" placeholder="Search cities" with-clear>
+  <wa-option value="paris" data-icon="location-dot" data-country-code="FR">Paris</wa-option>
+  <wa-option value="reims" data-icon="city" data-country-code="FR">Reims</wa-option>
+</lgs1920-autocomplete>
 ```
 
 ```js
 const field = document.querySelector('#city-search')
 field.options = [
-  {value: 'paris', label: 'Paris', icon: 'location-dot', countryCode: 'FR'},
-  {value: 'reims', label: 'Reims', icon: 'city', countryCode: 'FR'},
+  ...field.options,
+  {value: 'lyon', label: 'Lyon', icon: 'location-dot', countryCode: 'FR'},
 ]
 ```
 
