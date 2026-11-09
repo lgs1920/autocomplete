@@ -8,7 +8,7 @@
  * email: studio@lgs1920.fr
  *
  * Created on: 2026-11-08
- * Last modified: 2026-11-08
+ * Last modified: 2026-11-09
  *
  *
  * Copyright © 2026 LGS1920
@@ -18,13 +18,13 @@
     color-scheme: light dark;
     font-family: var(--wa-font-family-body);
     color: var(--wa-color-text-normal);
-    background: var(--wa-color-surface-default);
+    background: var(--wa-color-surface-lowered);
 }
 
 body {
     margin: 0;
     min-inline-size: 20rem;
-    background: var(--wa-color-surface-default);
+    background: var(--wa-color-surface-lowered);
 }
 
 a {
@@ -38,6 +38,7 @@ a {
     gap: var(--wa-space-l);
     padding: var(--wa-space-m) max(var(--wa-space-m), calc((100vw - 76rem) / 2));
     border-block-end: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+    background: var(--wa-color-surface-raised);
 }
 
 .site-title {
@@ -77,6 +78,16 @@ main {
     max-inline-size: 52rem;
 }
 
+.page-heading--hero {
+    gap: var(--wa-space-m);
+    max-inline-size: none;
+    padding: var(--wa-space-2xl);
+    border: var(--wa-border-width-s) solid var(--wa-color-brand-border-quiet);
+    border-radius: var(--wa-border-radius-l);
+    background: var(--wa-color-brand-fill-quiet);
+    color: var(--wa-color-brand-on-quiet);
+}
+
 .eyebrow {
     margin: 0;
     color: var(--wa-color-brand-on-quiet);
@@ -103,21 +114,45 @@ h2 {
 .intro,
 .section-intro {
     max-inline-size: 54rem;
-    color: var(--wa-color-text-quiet);
+    color: var(--wa-color-text-normal);
+    line-height: var(--wa-line-height-normal);
+}
+
+.page-heading--hero .intro {
+    color: var(--wa-color-brand-on-quiet);
+    font-size: var(--wa-font-size-l);
+}
+
+.intro-features {
+    margin-block: 0;
+    padding-inline: 0;
+    list-style: none;
+}
+
+.intro-features li {
+    display: grid;
+    align-content: start;
+    gap: var(--wa-space-xs);
+    padding: var(--wa-space-m);
+    border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+    border-radius: var(--wa-border-radius-m);
+    background: var(--wa-color-surface-raised);
+    color: var(--wa-color-text-normal);
     line-height: var(--wa-line-height-normal);
 }
 
 .demo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
     gap: var(--wa-space-l);
-    align-items: start;
+    align-items: stretch;
 }
 
 .demo-card,
 .content-card {
     display: grid;
     gap: var(--wa-space-m);
+    min-inline-size: 0;
     padding: var(--wa-space-l);
     border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
     border-radius: var(--wa-border-radius-l);
@@ -125,13 +160,180 @@ h2 {
     box-shadow: var(--wa-shadow-s);
 }
 
+.demo-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.demo-card h3 {
+    font-size: var(--wa-font-size-l);
+    line-height: var(--wa-line-height-condensed);
+}
+
+.demo-card > wa-button[data-dialog] {
+    align-self: flex-start;
+    margin-block-start: auto;
+}
+
 .demo-card lgs1920-autocomplete {
+    inline-size: 100%;
+    min-inline-size: 0;
     max-inline-size: 32rem;
 }
 
-.demo-card output {
-    min-block-size: 1.5em;
+.brand-color-preview {
+    display: grid;
+    gap: var(--wa-space-2xs);
+    min-block-size: 5rem;
+    padding: var(--wa-space-l);
+    border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+    border-radius: var(--wa-border-radius-l);
+    background: var(--wa-color-surface-raised);
+    color: var(--wa-color-text-normal);
+}
+
+.brand-color-preview--selected {
+    border-color: var(--wa-color-brand-fill-loud);
+    background: var(--wa-color-brand-fill-loud);
+    color: var(--wa-color-brand-on-loud);
+}
+
+.autocomplete-brand {
+    color: var(--wa-color-brand-on-quiet);
+    --wa-color-focus: var(--wa-color-brand-border-loud);
+    --wa-form-control-label-color: var(--wa-color-brand-on-quiet);
+    --wa-form-control-value-color: var(--wa-color-brand-on-quiet);
+    /* Tint the suggestion panel with the current brand hue. */
+    --lgs1920-autocomplete-panel-background: var(--wa-color-brand-fill-quiet);
+    /* Keep panel messages legible on the brand surface. */
+    --lgs1920-autocomplete-panel-color: var(--wa-color-brand-on-quiet);
+    /* Mark the panel edge with a stronger brand tone. */
+    --lgs1920-autocomplete-panel-border-color: var(--wa-color-brand-border-loud);
+    /* Match regular option text to the quiet brand surface. */
+    --lgs1920-autocomplete-option-color: var(--wa-color-brand-on-quiet);
+    /* Give the keyboard-active option a stronger brand surface. */
+    --lgs1920-autocomplete-option-active-background: var(--wa-color-brand-fill-normal);
+    /* Keep pointer hover within the brand palette. */
+    --lgs1920-autocomplete-option-hover-background: var(--wa-color-brand-fill-quiet);
+    /* Use the loud brand fill for a selected option. */
+    --lgs1920-autocomplete-option-selected-background: var(--wa-color-brand-fill-loud);
+    /* Use the matching on-color text for contrast. */
+    --lgs1920-autocomplete-option-selected-color: var(--wa-color-brand-on-loud);
+    /* Tint option icons with the current brand hue. */
+    --lgs1920-autocomplete-option-icon-color: var(--wa-color-brand-on-quiet);
+    /* Color the input outline and focus state with the chosen brand hue. */
+    --wa-form-control-border-color: var(--wa-color-brand-border-loud);
+    --wa-form-control-activated-color: var(--wa-color-brand-fill-loud);
+    /* Tint the filled input surface with the chosen brand hue. */
+    --wa-color-neutral-fill-quiet: var(--wa-color-brand-fill-quiet);
+    /* Keep the input placeholder within the chosen brand palette. */
+    --lgs1920-autocomplete-placeholder-color: var(--wa-color-brand-on-quiet);
+}
+
+.autocomplete-cyan {
+    /* Blend cyan into the raised surface so the panel follows the active theme. */
+    --lgs1920-autocomplete-panel-background: color-mix(in srgb, var(--wa-color-surface-raised) 88%, var(--wa-color-cyan) 12%);
+    /* Keep panel text aligned with the active theme's text color. */
+    --lgs1920-autocomplete-panel-color: var(--wa-color-text-normal);
+    /* Blend the border with the active theme's surface border. */
+    --lgs1920-autocomplete-panel-border-color: color-mix(in srgb, var(--wa-color-surface-border) 70%, var(--wa-color-cyan) 30%);
+    /* Tint the keyboard-active option while retaining the theme's raised surface. */
+    --lgs1920-autocomplete-option-active-background: color-mix(in srgb, var(--wa-color-surface-raised) 76%, var(--wa-color-cyan) 24%);
+    /* Tint the pointer-hover option while retaining the theme's raised surface. */
+    --lgs1920-autocomplete-option-hover-background: color-mix(in srgb, var(--wa-color-surface-raised) 86%, var(--wa-color-cyan) 14%);
+    /* Blend a stronger cyan into the selected option's theme surface. */
+    --lgs1920-autocomplete-option-selected-background: color-mix(in srgb, var(--wa-color-surface-raised) 68%, var(--wa-color-cyan) 32%);
+    /* Keep selected-option text aligned with the active theme's text color. */
+    --lgs1920-autocomplete-option-selected-color: var(--wa-color-text-normal);
+    /* Mix the quiet text color with cyan for a theme-aware icon tint. */
+    --lgs1920-autocomplete-option-icon-color: color-mix(in srgb, var(--wa-color-text-quiet) 40%, var(--wa-color-cyan) 60%);
+}
+
+.demo-form {
+    display: grid;
+    gap: var(--wa-space-m);
+}
+
+.demo-card wa-input,
+.demo-card wa-select {
+    inline-size: 100%;
+    max-inline-size: 32rem;
+}
+
+.example-code-dialog {
+    /* Keep code dialogs wide enough for snippets while fitting the viewport. */
+    --width: 90vw;
+}
+
+.example-code-dialog::part(footer) {
+    border-block-start: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+    padding-block-start: var(--spacing);
+}
+
+.example-code-dialog footer[slot="footer"] {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    inline-size: 100%;
+}
+
+.example-code-dialog .eyebrow {
+    font-size: var(--wa-font-size-xs);
+}
+
+.example-code-dialog pre {
+    margin: 0;
+    max-inline-size: 100%;
+}
+
+.demo-card .search-result {
+    min-block-size: 3.5rem;
+    margin: 0;
+    color: var(--wa-color-text-normal);
+    overflow-wrap: anywhere;
+}
+
+.selected-flags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--wa-space-s);
+    min-block-size: 3.5rem;
+}
+
+.selected-flags-empty {
     color: var(--wa-color-text-quiet);
+}
+
+.country-response-details[hidden] {
+    display: none;
+}
+
+.country-flag {
+    display: block;
+    inline-size: 4rem;
+    block-size: 2.5rem;
+    border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+    border-radius: var(--wa-border-radius-s);
+    background: var(--wa-color-surface-default);
+    object-fit: contain;
+}
+
+.country-flag-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 4rem;
+    block-size: 2.5rem;
+    border: var(--wa-border-width-s) solid var(--wa-color-surface-border);
+    border-radius: var(--wa-border-radius-s);
+    background: var(--wa-color-surface-default);
+    font-size: var(--wa-font-size-2xl);
+    line-height: 1;
+}
+
+.search-result code {
+    white-space: pre-wrap;
     overflow-wrap: anywhere;
 }
 
@@ -143,6 +345,15 @@ h2 {
     inline-size: 100%;
     border-collapse: collapse;
     text-align: start;
+}
+
+.table-scroll {
+    max-inline-size: 100%;
+    overflow-x: auto;
+}
+
+.table-scroll--wide table {
+    min-inline-size: 42rem;
 }
 
 .content-card th,
@@ -167,6 +378,48 @@ pre {
     color: var(--wa-color-text-normal);
 }
 
+pre code {
+    display: block;
+    font-size: var(--wa-font-size-s);
+    line-height: var(--wa-line-height-normal);
+    white-space: pre;
+}
+
+.token-keyword,
+.token-tag,
+.token-selector {
+    color: var(--wa-color-brand-on-quiet);
+}
+
+.token-property,
+.token-attribute {
+    color: var(--wa-color-danger-on-quiet);
+}
+
+.token-string,
+.token-attribute-value {
+    color: var(--wa-color-success-on-quiet);
+}
+
+.token-number,
+.token-literal {
+    color: var(--wa-color-warning-on-quiet);
+}
+
+.token-function {
+    color: var(--wa-color-neutral-on-quiet);
+}
+
+.token-comment {
+    color: var(--wa-color-text-quiet);
+    font-style: italic;
+}
+
+.token-punctuation,
+.token-operator {
+    color: var(--wa-color-text-quiet);
+}
+
 code {
     font-family: var(--wa-font-family-code);
     font-size: 0.92em;
@@ -180,6 +433,10 @@ code {
 }
 
 @media (max-width: 48rem) {
+    .page-heading--hero {
+        padding: var(--wa-space-l);
+    }
+
     .site-banner {
         align-items: start;
         flex-direction: column;

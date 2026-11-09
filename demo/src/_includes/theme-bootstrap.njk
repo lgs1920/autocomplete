@@ -1,0 +1,37 @@
+<script>
+        (() => {
+            const preferenceKey = 'lgs1920-autocomplete-demo-preferences'
+            const themes = ['default', 'awesome', 'shoelace']
+            const palettes = ['default', 'bright', 'shoelace']
+            const brands = ['blue', 'red', 'orange', 'yellow', 'green', 'cyan', 'indigo', 'purple', 'pink', 'gray']
+            let savedPreferences = {}
+
+            try {
+                const storedValue = JSON.parse(localStorage.getItem(preferenceKey) ?? 'null')
+                if (storedValue && typeof storedValue === 'object' && !Array.isArray(storedValue)) {
+                    savedPreferences = storedValue
+                }
+            } catch {
+                savedPreferences = {}
+            }
+
+            const theme = themes.includes(savedPreferences.theme) ? savedPreferences.theme : 'default'
+            const brand = brands.includes(savedPreferences.brand) ? savedPreferences.brand : 'cyan'
+            const mode = ['system', 'light', 'dark'].includes(savedPreferences.mode) ? savedPreferences.mode : 'system'
+            const systemPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false
+            const effectiveMode = mode === 'system' ? (systemPrefersDark ? 'dark' : 'light') : mode
+            const themeClasses = themes.map(value => `wa-theme-${value}`)
+            const paletteClasses = palettes.map(value => `wa-palette-${value}`)
+            const brandClasses = brands.map(value => `wa-brand-${value}`)
+            const root = document.documentElement
+            const themeIndex = themes.indexOf(theme)
+
+            root.classList.remove(...themeClasses, ...paletteClasses, ...brandClasses, 'wa-light', 'wa-dark')
+            root.classList.add(themeClasses[themeIndex], paletteClasses[themeIndex], `wa-brand-${brand}`, `wa-${effectiveMode}`)
+            root.dataset.demoPreferenceKey = preferenceKey
+            root.dataset.demoTheme = theme
+            root.dataset.demoMode = mode
+            root.dataset.demoBrand = brand
+            root.dataset.demoEffectiveMode = effectiveMode
+        })()
+    </script>

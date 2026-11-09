@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en" class="wa-theme-default wa-palette-default wa-brand-blue wa-light">
+<html lang="en" class="wa-theme-default wa-palette-default wa-brand-cyan wa-light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Interactive examples for the @lgs1920/autocomplete Web Component.">
     <title>@lgs1920/autocomplete · Examples</title>
+    {% include "theme-bootstrap.njk" %}
     <link rel="stylesheet" href="./assets/webawesome.css">
     <link rel="stylesheet" href="./assets/styles.css">
 </head>
@@ -17,34 +18,23 @@
         <a href="https://github.com/lgs1920/autocomplete">GitHub</a>
         <a href="https://www.npmjs.com/package/@lgs1920/autocomplete">npm</a>
     </div>
-    <div class="theme-controls" aria-label="Web Awesome display settings">
-        <wa-select id="theme-control" label="Theme" label-at-start size="s" value="default">
-            <wa-option value="default">Default</wa-option>
-            <wa-option value="awesome">Awesome</wa-option>
-            <wa-option value="shoelace">Shoelace</wa-option>
-        </wa-select>
-        <wa-select id="mode-control" label="Mode" label-at-start size="s" value="light">
-            <wa-option value="light">Light</wa-option>
-            <wa-option value="dark">Dark</wa-option>
-        </wa-select>
-        <wa-select id="brand-control" label="Brand" label-at-start size="s" value="blue">
-            <wa-option value="blue">Blue</wa-option>
-            <wa-option value="red">Red</wa-option>
-            <wa-option value="orange">Orange</wa-option>
-            <wa-option value="green">Green</wa-option>
-            <wa-option value="purple">Purple</wa-option>
-        </wa-select>
-    </div>
+    {% include "theme-controls.njk" %}
 </nav>
 
 <main>
-    <header class="page-heading">
+    <header class="page-heading page-heading--hero">
         <p class="eyebrow">@lgs1920/autocomplete · Web Awesome 3</p>
         <h1>Search, choose, keep the real value</h1>
-        <p class="intro">A single-value autocomplete Web Component for short local lists and remote search. Its suggestions use Web Awesome icons and positioning, while the component owns keyboard navigation, filtering, selection, and request cleanup.</p>
+        <p class="intro">Search local data or connect a live API. Keep the selected value your forms need while showing people clear labels, icons, and useful metadata.</p>
+        <ul class="intro-features wa-grid wa-gap-m" aria-label="Component features">
+            <li><strong>Search</strong><span>Filter local options or query an API. Configure the minimum query length, debounce delay, result limit, and page size; remote callbacks receive an <code>AbortSignal</code> that can cancel stale fetches.</span></li>
+            <li><strong>Select</strong><span>Choose one option or several. Place Web Awesome icons or SVG/PNG images before or after each label.</span></li>
+            <li><strong>Keep values</strong><span>Submit selected values through forms; read custom option metadata from selection events. Keyboard navigation is built in.</span></li>
+            <li><strong>Remember</strong><span>Save recent selections in <code>localStorage</code> by instance id or shared group, and show them again when the query is empty.</span></li>
+        </ul>
         <div class="inline-actions">
-            <wa-button href="./docs/" appearance="filled">Read the API</wa-button>
-            <wa-button href="https://github.com/lgs1920/autocomplete" appearance="outlined">View source</wa-button>
+            <wa-button href="./docs/" appearance="filled" variant="brand">Read the API</wa-button>
+            <wa-button href="https://github.com/lgs1920/autocomplete" appearance="outlined" variant="neutral">View source</wa-button>
         </div>
     </header>
 
@@ -52,56 +42,451 @@
         <div class="page-heading">
             <p class="eyebrow">Examples</p>
             <h2 id="examples-heading">Try the component</h2>
-            <p class="section-intro">Type a few letters, move through results with the arrow keys, and press Enter to select. Each item can keep domain fields such as a department code alongside its value and label.</p>
+            <p class="section-intro">Type a few letters, move through results with the arrow keys, and press Enter to select. Each item can keep domain fields alongside its value and label. The city example shows per-instance input styles; the brand example previews standard theme colors.</p>
         </div>
         <div class="demo-grid">
             <article class="demo-card">
-                <p class="eyebrow">Local options · recent selections · icon at start</p>
-                <h3>Find a city</h3>
-                <lgs1920-autocomplete id="local-autocomplete" label="City" name="city" placeholder="Search Troyes, Reims, Lyon…"></lgs1920-autocomplete>
-                <p class="section-intro">The last three selections are saved in this browser and shown again when the field is empty.</p>
+                <p class="eyebrow">Local options · recent selections · default appearance</p>
+                <h3>Find a fruit</h3>
+                <lgs1920-autocomplete id="local-autocomplete" label="Fruit" name="fruit" placeholder="Search apple, mango, watermelon…" with-clear>
+                    <wa-icon slot="start" name="magnifying-glass" aria-hidden="true"></wa-icon>
+                </lgs1920-autocomplete>
+                <p class="section-intro">Choose from 30 fruits in English. The last three selections are saved in this browser and shown when the field is empty. With recent suggestions open, activate the chevron to show every fruit; it points up while the full list is open. The field uses the component's default size and appearance, with the active theme's standard colors.</p>
                 <div class="inline-actions">
                     <wa-button appearance="outlined" size="s" data-clear="#local-autocomplete">Clear selection</wa-button>
                 </div>
-                <output id="local-autocomplete-selection" aria-live="polite">Nothing selected</output>
+                <wa-details summary="View response">
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="local-autocomplete-selection">Nothing selected</code></pre>
+                </wa-details>
+                <wa-button appearance="outlined" size="s" data-dialog="open fruit-example-dialog">View example code</wa-button>
+                <wa-dialog id="fruit-example-dialog" class="example-code-dialog" label="Example code: Find a fruit" with-footer>
+                    <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
+                    <p class="eyebrow">HTML</p>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"local-autocomplete"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"Fruit"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"fruit"</span> <span class="token-attribute">with-clear</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">wa-icon</span> <span class="token-attribute">slot</span>=<span class="token-attribute-value">"start"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"magnifying-glass"</span> <span class="token-attribute">aria-hidden</span>=<span class="token-attribute-value">"true"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">wa-icon</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
+                    <p class="eyebrow">JavaScript</p>
+                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#local-autocomplete'</span>)
+field.options = [
+  {<span class="token-property">value</span>: <span class="token-string">'apple'</span>, <span class="token-property">label</span>: <span class="token-string">'Apple'</span>, <span class="token-property">category</span>: <span class="token-string">'Pome fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'apricot'</span>, <span class="token-property">label</span>: <span class="token-string">'Apricot'</span>, <span class="token-property">category</span>: <span class="token-string">'Stone fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'avocado'</span>, <span class="token-property">label</span>: <span class="token-string">'Avocado'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'banana'</span>, <span class="token-property">label</span>: <span class="token-string">'Banana'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'blackberry'</span>, <span class="token-property">label</span>: <span class="token-string">'Blackberry'</span>, <span class="token-property">category</span>: <span class="token-string">'Berry'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'blueberry'</span>, <span class="token-property">label</span>: <span class="token-string">'Blueberry'</span>, <span class="token-property">category</span>: <span class="token-string">'Berry'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'cantaloupe'</span>, <span class="token-property">label</span>: <span class="token-string">'Cantaloupe'</span>, <span class="token-property">category</span>: <span class="token-string">'Melon'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'cherry'</span>, <span class="token-property">label</span>: <span class="token-string">'Cherry'</span>, <span class="token-property">category</span>: <span class="token-string">'Stone fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'coconut'</span>, <span class="token-property">label</span>: <span class="token-string">'Coconut'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'cranberry'</span>, <span class="token-property">label</span>: <span class="token-string">'Cranberry'</span>, <span class="token-property">category</span>: <span class="token-string">'Berry'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'dragon-fruit'</span>, <span class="token-property">label</span>: <span class="token-string">'Dragon fruit'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'fig'</span>, <span class="token-property">label</span>: <span class="token-string">'Fig'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'grape'</span>, <span class="token-property">label</span>: <span class="token-string">'Grape'</span>, <span class="token-property">category</span>: <span class="token-string">'Berry'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'grapefruit'</span>, <span class="token-property">label</span>: <span class="token-string">'Grapefruit'</span>, <span class="token-property">category</span>: <span class="token-string">'Citrus fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'guava'</span>, <span class="token-property">label</span>: <span class="token-string">'Guava'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'kiwi'</span>, <span class="token-property">label</span>: <span class="token-string">'Kiwi'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'lemon'</span>, <span class="token-property">label</span>: <span class="token-string">'Lemon'</span>, <span class="token-property">category</span>: <span class="token-string">'Citrus fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'lime'</span>, <span class="token-property">label</span>: <span class="token-string">'Lime'</span>, <span class="token-property">category</span>: <span class="token-string">'Citrus fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'mango'</span>, <span class="token-property">label</span>: <span class="token-string">'Mango'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'nectarine'</span>, <span class="token-property">label</span>: <span class="token-string">'Nectarine'</span>, <span class="token-property">category</span>: <span class="token-string">'Stone fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'orange'</span>, <span class="token-property">label</span>: <span class="token-string">'Orange'</span>, <span class="token-property">category</span>: <span class="token-string">'Citrus fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'papaya'</span>, <span class="token-property">label</span>: <span class="token-string">'Papaya'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'peach'</span>, <span class="token-property">label</span>: <span class="token-string">'Peach'</span>, <span class="token-property">category</span>: <span class="token-string">'Stone fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'pear'</span>, <span class="token-property">label</span>: <span class="token-string">'Pear'</span>, <span class="token-property">category</span>: <span class="token-string">'Pome fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'pineapple'</span>, <span class="token-property">label</span>: <span class="token-string">'Pineapple'</span>, <span class="token-property">category</span>: <span class="token-string">'Tropical fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'plum'</span>, <span class="token-property">label</span>: <span class="token-string">'Plum'</span>, <span class="token-property">category</span>: <span class="token-string">'Stone fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'pomegranate'</span>, <span class="token-property">label</span>: <span class="token-string">'Pomegranate'</span>, <span class="token-property">category</span>: <span class="token-string">'Pome fruit'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'raspberry'</span>, <span class="token-property">label</span>: <span class="token-string">'Raspberry'</span>, <span class="token-property">category</span>: <span class="token-string">'Berry'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'strawberry'</span>, <span class="token-property">label</span>: <span class="token-string">'Strawberry'</span>, <span class="token-property">category</span>: <span class="token-string">'Berry'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'watermelon'</span>, <span class="token-property">label</span>: <span class="token-string">'Watermelon'</span>, <span class="token-property">category</span>: <span class="token-string">'Melon'</span>},
+]
+field.persistence = {<span class="token-property">id</span>: <span class="token-string">'fruit-search-demo'</span>, <span class="token-property">limit</span>: <span class="token-number">3</span>}
+
+field.addEventListener(<span class="token-string">'wa-select'</span>, event <span class="token-operator">=&gt;</span> {
+  console.log(event.detail.value, event.detail.option.category)
+})</code></pre>
+                    <footer slot="footer">
+                        <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
+                    </footer>
+                </wa-dialog>
             </article>
 
             <article class="demo-card">
-                <p class="eyebrow">Local options · icon at end</p>
-                <h3>Choose another city</h3>
-                <lgs1920-autocomplete id="trailing-autocomplete" icon-position="end" label="City" placeholder="Search cities"></lgs1920-autocomplete>
-                <output id="trailing-autocomplete-selection" aria-live="polite">Nothing selected</output>
+                <p class="eyebrow">Local options · Web Awesome brand colors</p>
+                <h3>Choose a brand color</h3>
+                <lgs1920-autocomplete id="brand-color-autocomplete" class="autocomplete-brand" label="Brand color" name="brandColor" size="s" appearance="filled-outlined" pill placeholder="Choose a brand color" with-clear>
+                    <wa-icon slot="start" name="palette" aria-hidden="true"></wa-icon>
+                </lgs1920-autocomplete>
+                <p class="section-intro">Choose a standard Web Awesome brand hue to change the active brand for the whole demo. The field, suggestions, preview, and other brand-colored controls update together.</p>
+                <div id="brand-color-preview" class="brand-color-preview" role="status" aria-live="polite">
+                    <strong id="brand-color-preview-name">Choose a color to preview</strong>
+                    <span>Background: <code>--wa-color-brand-fill-loud</code></span>
+                    <span>Text: <code>--wa-color-brand-on-loud</code></span>
+                </div>
+                <wa-details id="brand-color-response-details" summary="View response" hidden>
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="brand-color-autocomplete-selection">Nothing selected</code></pre>
+                </wa-details>
+                <wa-button appearance="outlined" size="s" data-dialog="open brand-color-example-dialog">View example code</wa-button>
+                <wa-dialog id="brand-color-example-dialog" class="example-code-dialog" label="Example code: Choose a brand color" with-footer>
+                    <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
+                    <p class="eyebrow">HTML</p>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"brand-color-autocomplete"</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"autocomplete-brand"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"Brand color"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"brandColor"</span> <span class="token-attribute">appearance</span>=<span class="token-attribute-value">"filled-outlined"</span> <span class="token-attribute">with-clear</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;</span><span class="token-tag">wa-icon</span> <span class="token-attribute">slot</span>=<span class="token-attribute-value">"start"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"palette"</span> <span class="token-attribute">aria-hidden</span>=<span class="token-attribute-value">"true"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">wa-icon</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;</span><span class="token-tag">div</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"brand-color-preview"</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"brand-color-preview"</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;</span>Selected brand hue<span class="token-punctuation">&lt;/</span><span class="token-tag">strong</span><span class="token-punctuation">&gt;</span>
+  <span class="token-punctuation">&lt;/</span><span class="token-tag">div</span><span class="token-punctuation">&gt;</span>
+</code></pre>
+                    <p class="eyebrow">CSS</p>
+                    <pre data-language="CSS"><code>.brand-color-preview {
+  padding: var(--wa-space-l);
+  border-radius: var(--wa-border-radius-l);
+  background: var(--wa-color-surface-raised);
+  color: var(--wa-color-text-normal);
+}
+
+.brand-color-preview--selected {
+  background: var(--wa-color-brand-fill-loud);
+  color: var(--wa-color-brand-on-loud);
+}
+
+.autocomplete-brand {
+  color: var(--wa-color-brand-on-quiet);
+  --wa-color-focus: var(--wa-color-brand-border-loud);
+  --wa-form-control-label-color: var(--wa-color-brand-on-quiet);
+  --wa-form-control-value-color: var(--wa-color-brand-on-quiet);
+  /* Tint the suggestion panel with the current brand hue. */
+  --lgs1920-autocomplete-panel-background: var(--wa-color-brand-fill-quiet);
+  /* Keep panel messages legible on the brand surface. */
+  --lgs1920-autocomplete-panel-color: var(--wa-color-brand-on-quiet);
+  /* Mark the panel edge with a stronger brand tone. */
+  --lgs1920-autocomplete-panel-border-color: var(--wa-color-brand-border-loud);
+  /* Match regular option text to the quiet brand surface. */
+  --lgs1920-autocomplete-option-color: var(--wa-color-brand-on-quiet);
+  /* Give the keyboard-active option a stronger brand surface. */
+  --lgs1920-autocomplete-option-active-background: var(--wa-color-brand-fill-normal);
+  /* Keep pointer hover within the brand palette. */
+  --lgs1920-autocomplete-option-hover-background: var(--wa-color-brand-fill-quiet);
+  /* Use the loud brand fill for a selected option. */
+  --lgs1920-autocomplete-option-selected-background: var(--wa-color-brand-fill-loud);
+  /* Use the matching on-color text for contrast. */
+  --lgs1920-autocomplete-option-selected-color: var(--wa-color-brand-on-loud);
+  /* Tint option icons with the current brand hue. */
+  --lgs1920-autocomplete-option-icon-color: var(--wa-color-brand-on-quiet);
+  /* Color the input outline and focus state with the chosen brand hue. */
+  --wa-form-control-border-color: var(--wa-color-brand-border-loud);
+  --wa-form-control-activated-color: var(--wa-color-brand-fill-loud);
+  /* Tint the filled input surface with the chosen brand hue. */
+  --wa-color-neutral-fill-quiet: var(--wa-color-brand-fill-quiet);
+  /* Keep the input placeholder within the chosen brand palette. */
+  --lgs1920-autocomplete-placeholder-color: var(--wa-color-brand-on-quiet);
+}</code></pre>
+                    <p class="eyebrow">JavaScript</p>
+                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#brand-color-autocomplete'</span>)
+<span class="token-keyword">const</span> root = document.documentElement
+<span class="token-keyword">const</span> brandControl = document.querySelector(<span class="token-string">'#brand-control'</span>)
+<span class="token-keyword">const</span> preview = document.querySelector(<span class="token-string">'#brand-color-preview'</span>)
+<span class="token-keyword">const</span> previewName = document.querySelector(<span class="token-string">'#brand-color-preview-name'</span>)
+<span class="token-keyword">const</span> hues = [<span class="token-string">'red'</span>, <span class="token-string">'orange'</span>, <span class="token-string">'yellow'</span>, <span class="token-string">'green'</span>, <span class="token-string">'cyan'</span>, <span class="token-string">'blue'</span>, <span class="token-string">'indigo'</span>, <span class="token-string">'purple'</span>, <span class="token-string">'pink'</span>, <span class="token-string">'gray'</span>]
+field.options = hues.map(hue <span class="token-operator">=&gt;</span> ({<span class="token-property">value</span>: hue, <span class="token-property">label</span>: hue}))
+<span class="token-keyword">const</span> updatePreview = option <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">if</span> (!option) <span class="token-keyword">return</span>
+  <span class="token-keyword">const</span> brandClasses = hues.map(hue <span class="token-operator">=&gt;</span> <span class="token-string">'wa-brand-'</span> + hue)
+  root.classList.remove(...brandClasses)
+  root.classList.add(<span class="token-string">'wa-brand-'</span> + option.value)
+  brandControl.value = option.value
+  preview.classList.add(<span class="token-string">'brand-color-preview--selected'</span>)
+  previewName.textContent = option.label + <span class="token-string">' brand'</span>
+}
+field.addEventListener(<span class="token-string">'wa-select'</span>, event <span class="token-operator">=&gt;</span> updatePreview(event.detail.option))
+field.addEventListener(<span class="token-string">'wa-clear'</span>, () <span class="token-operator">=&gt;</span> updatePreview())</code></pre>
+                    <footer slot="footer">
+                        <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
+                    </footer>
+                </wa-dialog>
             </article>
 
             <article class="demo-card">
-                <p class="eyebrow">Asynchronous callback</p>
-                <h3>Search countries</h3>
-                <lgs1920-autocomplete id="remote-autocomplete" label="Country" min-chars="1" debounce="150" placeholder="Search countries"></lgs1920-autocomplete>
-                <p class="section-intro">This demo simulates a network request and cancels stale searches with the provided <code>AbortSignal</code>.</p>
-                <output id="remote-autocomplete-selection" aria-live="polite">Nothing selected</output>
+                <p class="eyebrow">Photon · cyan filled-outlined style</p>
+                <h3>Search cities</h3>
+                <lgs1920-autocomplete id="remote-autocomplete" class="autocomplete-cyan" label="City" size="l" appearance="filled-outlined" min-chars="2" debounce="350" page-size="3" max-results="32" placeholder="Try lon to see pagination" with-clear></lgs1920-autocomplete>
+                <p class="section-intro">Searches <a href="https://photon.komoot.io/">Photon</a> live after two characters and waits 350 ms after the last keystroke. Try <code>lon</code> to see the page controls: the field requests up to 32 cities and shows three per page when more than three matches are returned. This larger filled-outlined field uses cyan tokens for its suggestion panel and option states.</p>
+                <wa-details summary="View response">
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="remote-autocomplete-selection">Nothing selected</code></pre>
+                </wa-details>
+                <wa-button appearance="outlined" size="s" data-dialog="open city-search-example-dialog">View example code</wa-button>
+                <wa-dialog id="city-search-example-dialog" class="example-code-dialog" label="Example code: Search cities" with-footer>
+                    <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
+                    <p class="eyebrow">HTML</p>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"remote-autocomplete"</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"autocomplete-cyan"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"City"</span> <span class="token-attribute">size</span>=<span class="token-attribute-value">"l"</span> <span class="token-attribute">appearance</span>=<span class="token-attribute-value">"filled-outlined"</span> <span class="token-attribute">min-chars</span>=<span class="token-attribute-value">"2"</span> <span class="token-attribute">debounce</span>=<span class="token-attribute-value">"350"</span> <span class="token-attribute">page-size</span>=<span class="token-attribute-value">"3"</span> <span class="token-attribute">max-results</span>=<span class="token-attribute-value">"32"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
+                    <p class="eyebrow">CSS</p>
+                    <pre data-language="CSS"><code>.autocomplete-cyan {
+    /* Blend the panel with the active theme's raised surface. */
+    --lgs1920-autocomplete-panel-background: color-mix(in srgb, var(--wa-color-surface-raised) 88%, var(--wa-color-cyan) 12%);
+    /* Follow the active theme's text color. */
+    --lgs1920-autocomplete-panel-color: var(--wa-color-text-normal);
+    /* Blend the outline with the active theme's border color. */
+    --lgs1920-autocomplete-panel-border-color: color-mix(in srgb, var(--wa-color-surface-border) 70%, var(--wa-color-cyan) 30%);
+    /* Tint the keyboard-active option. */
+    --lgs1920-autocomplete-option-active-background: color-mix(in srgb, var(--wa-color-surface-raised) 76%, var(--wa-color-cyan) 24%);
+    /* Tint the pointer-hover option. */
+    --lgs1920-autocomplete-option-hover-background: color-mix(in srgb, var(--wa-color-surface-raised) 86%, var(--wa-color-cyan) 14%);
+    /* Apply a stronger cyan tint to the selected option. */
+    --lgs1920-autocomplete-option-selected-background: color-mix(in srgb, var(--wa-color-surface-raised) 68%, var(--wa-color-cyan) 32%);
+    /* Keep selected-option text readable in each color mode. */
+    --lgs1920-autocomplete-option-selected-color: var(--wa-color-text-normal);
+    /* Tint icons with cyan and the active theme's quiet text color. */
+    --lgs1920-autocomplete-option-icon-color: color-mix(in srgb, var(--wa-color-text-quiet) 40%, var(--wa-color-cyan) 60%);
+}</code></pre>
+                    <p class="eyebrow">JavaScript</p>
+                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#remote-autocomplete'</span>)
+field.searchOptions = <span class="token-keyword">async</span> (query, {signal}) <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">const</span> endpoint = <span class="token-keyword">new</span> URL(<span class="token-string">'https://photon.komoot.io/api/'</span>)
+  endpoint.searchParams.set(<span class="token-string">'q'</span>, query.trim())
+  endpoint.searchParams.set(<span class="token-string">'limit'</span>, String(field.maxResults))
+  endpoint.searchParams.set(<span class="token-string">'lang'</span>, <span class="token-string">'en'</span>)
+  endpoint.searchParams.append(<span class="token-string">'layer'</span>, <span class="token-string">'city'</span>)
+  <span class="token-keyword">const</span> response = <span class="token-keyword">await</span> fetch(endpoint, {signal})
+  <span class="token-keyword">if</span> (!response.ok) <span class="token-keyword">throw</span> <span class="token-keyword">new</span> Error(<span class="token-string">'City search failed'</span>)
+  <span class="token-keyword">const</span> result = <span class="token-keyword">await</span> response.json()
+  <span class="token-keyword">return</span> result.features.map(feature <span class="token-operator">=&gt;</span> ({
+    <span class="token-property">value</span>: <span class="token-string">`${feature.properties.osm_type}/${feature.properties.osm_id}`</span>,
+    <span class="token-property">label</span>: [feature.properties.name, feature.properties.country].filter(Boolean).join(<span class="token-string">', '</span>),
+    <span class="token-property">city</span>: feature.properties.name,
+    <span class="token-property">countryCode</span>: feature.properties.countrycode,
+    <span class="token-property">latitude</span>: feature.geometry.coordinates[<span class="token-number">1</span>],
+    <span class="token-property">longitude</span>: feature.geometry.coordinates[<span class="token-number">0</span>],
+  }))
+}</code></pre>
+                    <footer slot="footer">
+                        <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
+                    </footer>
+                </wa-dialog>
             </article>
+
+            <article class="demo-card">
+                <p class="eyebrow">Remote options · multiple selection · country flags</p>
+                <h3>Choose country flags</h3>
+                <lgs1920-autocomplete id="multiple-autocomplete" name="country-code" multiple label="Countries" min-chars="3" page-size="10" max-results="50" placeholder="Search countries" with-clear></lgs1920-autocomplete>
+                <p class="section-intro">Searches <a href="https://countries.dev/">countries.dev</a> by name and loads flags from <a href="https://flagcdn.io/">FlagCDN</a>. Flags appear as icons in suggestions and selected tags; selected flags are also shown below. Each ISO code is submitted under the same form field name. If the tags overflow, activate <code>+N</code> to browse all selections, 10 per page.</p>
+                <div id="multiple-autocomplete-selection" class="selected-flags" role="status" aria-live="polite"><span class="selected-flags-empty">No countries selected</span></div>
+                <wa-details id="multiple-autocomplete-response-details" class="country-response-details" summary="View response" hidden>
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="multiple-autocomplete-response"></code></pre>
+                </wa-details>
+                <wa-button appearance="outlined" size="s" data-dialog="open country-flags-example-dialog">View example code</wa-button>
+                <wa-dialog id="country-flags-example-dialog" class="example-code-dialog" label="Example code: Choose country flags" with-footer>
+                    <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
+                    <p class="eyebrow">HTML</p>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"multiple-autocomplete"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"country-code"</span> <span class="token-attribute">multiple</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"Countries"</span> <span class="token-attribute">min-chars</span>=<span class="token-attribute-value">"3"</span> <span class="token-attribute">page-size</span>=<span class="token-attribute-value">"10"</span> <span class="token-attribute">max-results</span>=<span class="token-attribute-value">"50"</span> <span class="token-attribute">with-clear</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;</span><span class="token-tag">div</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"multiple-autocomplete-selection"</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"selected-flags"</span> <span class="token-attribute">role</span>=<span class="token-attribute-value">"status"</span> <span class="token-attribute">aria-live</span>=<span class="token-attribute-value">"polite"</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">span</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"selected-flags-empty"</span><span class="token-punctuation">&gt;</span>No countries selected<span class="token-punctuation">&lt;/</span><span class="token-tag">span</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">div</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;</span><span class="token-tag">wa-details</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"multiple-autocomplete-response-details"</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"country-response-details"</span> <span class="token-attribute">summary</span>=<span class="token-attribute-value">"View response"</span> <span class="token-attribute">hidden</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">pre</span> <span class="token-attribute">class</span>=<span class="token-attribute-value">"search-result"</span> <span class="token-attribute">data-language</span>=<span class="token-attribute-value">"JSON"</span> <span class="token-attribute">role</span>=<span class="token-attribute-value">"status"</span> <span class="token-attribute">aria-live</span>=<span class="token-attribute-value">"polite"</span><span class="token-punctuation">&gt;&lt;</span><span class="token-tag">code</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"multiple-autocomplete-response"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">code</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">pre</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-details</span><span class="token-punctuation">&gt;</span></code></pre>
+                    <p class="eyebrow">JavaScript</p>
+                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#multiple-autocomplete'</span>)
+<span class="token-keyword">const</span> responseDetails = document.querySelector(<span class="token-string">'#multiple-autocomplete-response-details'</span>)
+<span class="token-keyword">const</span> responseOutput = document.querySelector(<span class="token-string">'#multiple-autocomplete-response'</span>)
+field.searchOptions = <span class="token-keyword">async</span> (query, {signal}) <span class="token-operator">=&gt;</span> {
+  responseDetails.hidden = <span class="token-keyword">true</span>
+  responseOutput.replaceChildren()
+  <span class="token-keyword">const</span> endpoint = <span class="token-keyword">new</span> URL(<span class="token-string">'https://countries.dev/name/'</span> + encodeURIComponent(query.trim()))
+  endpoint.searchParams.set(<span class="token-string">'fields'</span>, <span class="token-string">'name,alpha2Code,flag,flags'</span>)
+  endpoint.searchParams.set(<span class="token-string">'limit'</span>, String(field.maxResults))
+  <span class="token-keyword">const</span> response = <span class="token-keyword">await</span> fetch(endpoint, {signal})
+  <span class="token-keyword">if</span> (response.status === <span class="token-number">404</span>) {
+    responseOutput.textContent = <span class="token-string">'[]'</span>
+    responseDetails.hidden = <span class="token-keyword">false</span>
+    <span class="token-keyword">return</span> []
+  }
+  <span class="token-keyword">if</span> (!response.ok) <span class="token-keyword">throw</span> <span class="token-keyword">new</span> Error(<span class="token-string">'Country search failed'</span>)
+  <span class="token-keyword">const</span> countries = <span class="token-keyword">await</span> response.json()
+  responseOutput.textContent = JSON.stringify(countries, <span class="token-keyword">null</span>, <span class="token-number">2</span>)
+  responseDetails.hidden = <span class="token-keyword">false</span>
+  <span class="token-keyword">const</span> countryFlagEmoji = code <span class="token-operator">=&gt;</span> Array.from(code.toUpperCase(), letter <span class="token-operator">=&gt;</span> String.fromCodePoint(letter.charCodeAt(<span class="token-number">0</span>) + <span class="token-number">127397</span>)).join(<span class="token-string">''</span>)
+  <span class="token-keyword">return</span> countries.map(country <span class="token-operator">=&gt;</span> {
+    <span class="token-keyword">const</span> flagUrl = <span class="token-string">'https://flagcdn.io/'</span> + country.alpha2Code.toLowerCase() + <span class="token-string">'.svg'</span>
+    <span class="token-keyword">const</span> flagEmoji = countryFlagEmoji(country.alpha2Code)
+    <span class="token-keyword">return</span> {
+      <span class="token-property">value</span>: country.alpha2Code,
+      <span class="token-property">label</span>: country.name,
+      <span class="token-property">icon</span>: {<span class="token-property">src</span>: flagUrl, <span class="token-property">fallback</span>: flagEmoji},
+      <span class="token-property">flagUrl</span>: flagUrl,
+      <span class="token-property">flagEmoji</span>: flagEmoji,
+    }
+  })
+}
+
+<span class="token-keyword">const</span> output = document.querySelector(<span class="token-string">'#multiple-autocomplete-selection'</span>)
+<span class="token-keyword">const</span> renderFlags = () <span class="token-operator">=&gt;</span> {
+  output.replaceChildren()
+  <span class="token-keyword">if</span> (field.selectedOptions.length === <span class="token-number">0</span>) {
+    output.textContent = <span class="token-string">'No countries selected'</span>
+    <span class="token-keyword">return</span>
+  }
+  field.selectedOptions.forEach(country <span class="token-operator">=&gt;</span> {
+    <span class="token-keyword">const</span> flag = document.createElement(<span class="token-string">'img'</span>)
+    flag.src = country.flagUrl
+    flag.alt = <span class="token-string">'Flag of '</span> + country.label
+    output.append(flag)
+  })
+}
+field.addEventListener(<span class="token-string">'wa-select'</span>, renderFlags)
+field.addEventListener(<span class="token-string">'wa-deselect'</span>, renderFlags)
+field.addEventListener(<span class="token-string">'wa-clear'</span>, renderFlags)</code></pre>
+                    <footer slot="footer">
+                        <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
+                    </footer>
+                </wa-dialog>
+            </article>
+
+            <article class="demo-card">
+                <p class="eyebrow">SVG and PNG icons · local and remote URLs</p>
+                <h3>Combine icon sources</h3>
+                <lgs1920-autocomplete id="icon-source-autocomplete" name="place" multiple label="Places" icon-position="start" max-options-visible="2" placeholder="Choose a place" with-clear></lgs1920-autocomplete>
+                <p class="section-intro">This list combines a Web Awesome icon, local SVG files, and a remote SVG URL. The same icons appear in suggestions and selected tags. The code also shows how a Vite glob can load a directory of SVG or PNG files.</p>
+                <wa-details summary="View response">
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="icon-source-autocomplete-selection">Nothing selected</code></pre>
+                </wa-details>
+                <wa-button appearance="outlined" size="s" data-dialog="open icon-source-example-dialog">View example code</wa-button>
+                <wa-dialog id="icon-source-example-dialog" class="example-code-dialog" label="Example code: Combine icon sources" with-footer>
+                    <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
+                    <p class="eyebrow">HTML</p>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"icon-source-autocomplete"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"place"</span> <span class="token-attribute">multiple</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"Places"</span> <span class="token-attribute">icon-position</span>=<span class="token-attribute-value">"start"</span> <span class="token-attribute">max-options-visible</span>=<span class="token-attribute-value">"2"</span> <span class="token-attribute">with-clear</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
+                    <p class="eyebrow">JavaScript · direct URLs</p>
+                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#icon-source-autocomplete'</span>)
+field.options = [
+  {<span class="token-property">value</span>: <span class="token-string">'compass'</span>, <span class="token-property">label</span>: <span class="token-string">'Compass route'</span>, <span class="token-property">icon</span>: <span class="token-string">'/icons/compass.svg'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'landmark'</span>, <span class="token-property">label</span>: <span class="token-string">'Historic landmark'</span>, <span class="token-property">icon</span>: <span class="token-string">'landmark'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'old-town'</span>, <span class="token-property">label</span>: <span class="token-string">'Old town'</span>, <span class="token-property">icon</span>: {<span class="token-property">src</span>: <span class="token-string">'/icons/landmark.svg'</span>}},
+  {<span class="token-property">value</span>: <span class="token-string">'france'</span>, <span class="token-property">label</span>: <span class="token-string">'France'</span>, <span class="token-property">icon</span>: {<span class="token-property">src</span>: <span class="token-string">'https://flagcdn.io/fr.svg'</span>, <span class="token-property">fallback</span>: <span class="token-string">'🇫🇷'</span>}},
+]</code></pre>
+                    <p class="eyebrow">JavaScript · Vite glob</p>
+                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> iconUrls = import.meta.glob(<span class="token-string">'../icons/*.{svg,png}'</span>, {
+  <span class="token-property">eager</span>: <span class="token-literal">true</span>,
+  <span class="token-property">import</span>: <span class="token-string">'default'</span>,
+  <span class="token-property">query</span>: <span class="token-string">'?url'</span>,
+})
+
+field.options = Object.entries(iconUrls).map(([path, src]) <span class="token-operator">=&gt;</span> ({
+  <span class="token-property">value</span>: path,
+  <span class="token-property">label</span>: path.split(<span class="token-string">'/'</span>).pop(),
+  <span class="token-property">icon</span>: {<span class="token-property">src</span>},
+}))</code></pre>
+                    <footer slot="footer">
+                        <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
+                    </footer>
+                </wa-dialog>
+            </article>
+
+            <article class="demo-card">
+                <p class="eyebrow">countries.dev · form-associated value</p>
+                <h3>Submit a country code</h3>
+                <form id="form-demo" class="demo-form">
+                    <lgs1920-autocomplete id="form-autocomplete" label="Country" name="country-code" min-chars="3" placeholder="Search countries"></lgs1920-autocomplete>
+                    <div class="inline-actions">
+                        <wa-button type="submit" appearance="filled">Submit country code</wa-button>
+                    </div>
+                    <wa-details summary="View response">
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="form-demo-data">Search for a country, then submit the form.</code></pre>
+                </wa-details>
+                </form>
+                <p class="section-intro">Searches <a href="https://countries.dev/">countries.dev</a> by name and submits the selected ISO alpha-2 country code.</p>
+                <wa-button appearance="outlined" size="s" data-dialog="open country-form-example-dialog">View example code</wa-button>
+                <wa-dialog id="country-form-example-dialog" class="example-code-dialog" label="Example code: Submit a country code" with-footer>
+                    <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
+                    <p class="eyebrow">HTML</p>
+                    <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">form</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"form-demo"</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"form-autocomplete"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"country-code"</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"Country"</span> <span class="token-attribute">min-chars</span>=<span class="token-attribute-value">"3"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">wa-button</span> <span class="token-attribute">type</span>=<span class="token-attribute-value">"submit"</span><span class="token-punctuation">&gt;</span>Submit country code<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-button</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">form</span><span class="token-punctuation">&gt;</span></code></pre>
+                    <p class="eyebrow">JavaScript</p>
+                    <pre data-language="JavaScript"><code><span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#form-autocomplete'</span>)
+field.searchOptions = <span class="token-keyword">async</span> (query, {signal}) <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">const</span> endpoint = <span class="token-keyword">new</span> URL(<span class="token-string">`https://countries.dev/name/${encodeURIComponent(query.trim())}`</span>)
+  endpoint.searchParams.set(<span class="token-string">'fields'</span>, <span class="token-string">'name,alpha2Code'</span>)
+  endpoint.searchParams.set(<span class="token-string">'limit'</span>, String(field.maxResults))
+  <span class="token-keyword">const</span> response = <span class="token-keyword">await</span> fetch(endpoint, {signal})
+  <span class="token-keyword">if</span> (response.status === <span class="token-number">404</span>) <span class="token-keyword">return</span> []
+  <span class="token-keyword">if</span> (!response.ok) <span class="token-keyword">throw</span> <span class="token-keyword">new</span> Error(<span class="token-string">'Country search failed'</span>)
+  <span class="token-keyword">const</span> countries = <span class="token-keyword">await</span> response.json()
+  <span class="token-keyword">return</span> countries.map(country <span class="token-operator">=&gt;</span> ({
+    <span class="token-property">value</span>: country.alpha2Code,
+    <span class="token-property">label</span>: country.name,
+  }))
+}
+
+<span class="token-keyword">const</span> form = document.querySelector(<span class="token-string">'#form-demo'</span>)
+form.addEventListener(<span class="token-string">'submit'</span>, event <span class="token-operator">=&gt;</span> {
+  event.preventDefault()
+  <span class="token-keyword">const</span> data = Object.fromEntries(<span class="token-keyword">new</span> FormData(event.currentTarget).entries())
+  console.log(data)
+})</code></pre>
+                    <footer slot="footer">
+                        <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
+                    </footer>
+                </wa-dialog>
+            </article>
+
         </div>
     </section>
 
     <section class="content-card" aria-labelledby="quick-start-heading">
         <p class="eyebrow">Quick start</p>
-        <h2 id="quick-start-heading">Pass an array or an async search function</h2>
-        <pre><code>import '@lgs1920/autocomplete'
+        <h2 id="quick-start-heading">Add the field, then provide its options</h2>
+        <p>The HTML declares the initial choices with <code>&lt;wa-option&gt;</code> elements. JavaScript appends Lyon through <code>field.options</code>, showing how to update the list in code. It also remembers recent choices and handles selection and form submission.</p>
+        <div class="quick-start-examples wa-grid wa-gap-l">
+            <div>
+                <p class="eyebrow">HTML · index.html</p>
+                <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">form</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"city-form"</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span>
+        <span class="token-attribute">id</span>=<span class="token-attribute-value">"city-search"</span>
+        <span class="token-attribute">name</span>=<span class="token-attribute-value">"city"</span>
+        <span class="token-attribute">label</span>=<span class="token-attribute-value">"City"</span>
+        <span class="token-attribute">placeholder</span>=<span class="token-attribute-value">"Search Paris, Reims, Lyon"</span>
+        <span class="token-attribute">with-clear</span><span class="token-punctuation">&gt;</span>
+        <span class="token-punctuation">&lt;</span><span class="token-tag">wa-option</span> <span class="token-attribute">value</span>=<span class="token-attribute-value">"paris"</span> <span class="token-attribute">data-icon</span>=<span class="token-attribute-value">"location-dot"</span> <span class="token-attribute">data-department</span>=<span class="token-attribute-value">"75"</span> <span class="token-attribute">data-region</span>=<span class="token-attribute-value">"Île-de-France"</span><span class="token-punctuation">&gt;</span>Paris<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-option</span><span class="token-punctuation">&gt;</span>
+        <span class="token-punctuation">&lt;</span><span class="token-tag">wa-option</span> <span class="token-attribute">value</span>=<span class="token-attribute-value">"reims"</span> <span class="token-attribute">data-icon</span>=<span class="token-attribute-value">"city"</span> <span class="token-attribute">data-department</span>=<span class="token-attribute-value">"51"</span> <span class="token-attribute">data-region</span>=<span class="token-attribute-value">"Grand Est"</span><span class="token-punctuation">&gt;</span>Reims<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-option</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">wa-button</span> <span class="token-attribute">type</span>=<span class="token-attribute-value">"submit"</span><span class="token-punctuation">&gt;</span>Submit city<span class="token-punctuation">&lt;/</span><span class="token-tag">wa-button</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">form</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;</span><span class="token-tag">output</span> <span class="token-attribute">id</span>=<span class="token-attribute-value">"city-result"</span> <span class="token-attribute">aria-live</span>=<span class="token-attribute-value">"polite"</span><span class="token-punctuation">&gt;</span>Choose a city to see its data.<span class="token-punctuation">&lt;/</span><span class="token-tag">output</span><span class="token-punctuation">&gt;</span>
 
-const field = document.querySelector('lgs1920-autocomplete')
+<span class="token-punctuation">&lt;</span><span class="token-tag">script</span> <span class="token-attribute">type</span>=<span class="token-attribute-value">"module"</span> <span class="token-attribute">src</span>=<span class="token-attribute-value">"./main.js"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">script</span><span class="token-punctuation">&gt;</span></code></pre>
+            </div>
+            <div>
+                <p class="eyebrow">JavaScript · main.js</p>
+                <pre data-language="JavaScript"><code><span class="token-keyword">import</span> <span class="token-string">'@awesome.me/webawesome/dist/styles/webawesome.css'</span>
+<span class="token-keyword">import</span> <span class="token-string">'@awesome.me/webawesome/dist/styles/themes/default.css'</span>
+<span class="token-keyword">import</span> <span class="token-string">'@lgs1920/autocomplete'</span>
+
+<span class="token-keyword">const</span> field = document.querySelector(<span class="token-string">'#city-search'</span>)
 field.options = [
-  {value: 'troyes', label: 'Troyes', icon: 'location-dot', department: '10'},
+  ...field.options,
+  {<span class="token-property">value</span>: <span class="token-string">'lyon'</span>, <span class="token-property">label</span>: <span class="token-string">'Lyon'</span>, <span class="token-property">icon</span>: <span class="token-string">'location-dot'</span>, <span class="token-property">department</span>: <span class="token-string">'69'</span>, <span class="token-property">region</span>: <span class="token-string">'Auvergne-Rhône-Alpes'</span>},
 ]
-field.persistence = {id: 'city-search', limit: 5}
+field.persistence = {<span class="token-property">id</span>: <span class="token-string">'city-search'</span>, <span class="token-property">limit</span>: <span class="token-number">5</span>} <span class="token-comment">// Optional: show recent choices on an empty query.</span>
 
-field.addEventListener('wa-select', event =&gt; {
-  console.log(event.detail.value, event.detail.option.department)
+<span class="token-keyword">const</span> form = document.querySelector(<span class="token-string">'#city-form'</span>)
+<span class="token-keyword">const</span> output = document.querySelector(<span class="token-string">'#city-result'</span>)
+
+field.addEventListener(<span class="token-string">'wa-select'</span>, event <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">const</span> {option} = event.detail
+  output.textContent = <span class="token-string">`${option.label} — ${option.department}, ${option.region}`</span>
+})
+
+form.addEventListener(<span class="token-string">'submit'</span>, event <span class="token-operator">=&gt;</span> {
+  event.preventDefault()
+  <span class="token-keyword">const</span> value = <span class="token-keyword">new</span> FormData(form).get(<span class="token-string">'city'</span>)
+  output.textContent = value ? <span class="token-string">`Submitted city value: ${value}`</span> : <span class="token-string">'Choose a city first.'</span>
 })</code></pre>
+            </div>
+        </div>
         <p>See the <a href="./docs/">full options and events reference</a> for the remote search contract, keyboard behavior, and icon formats.</p>
     </section>
 </main>
 
-<footer class="site-footer">LGS1920 · MIT licensed · <a href="https://github.com/lgs1920/autocomplete">Source on GitHub</a></footer>
+<footer class="site-footer">LGS1920 · MIT licensed · <a href="https://github.com/lgs1920/autocomplete">Source on GitHub</a> · Location search by <a href="https://photon.komoot.io/">Photon</a> · Country data by <a href="https://countries.dev/">countries.dev</a> · Flags by <a href="https://flagcdn.io/">FlagCDN</a> · Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> (ODbL)</footer>
 <script type="module" src="./assets/app.bundle.js"></script>
 </body>
 </html>

@@ -24,6 +24,7 @@ const configureDemo = eleventyConfig => {
     eleventyConfig.addPassthroughCopy({'demo/src/assets/styles.css': 'assets/styles.css'})
     eleventyConfig.addPassthroughCopy({'demo/src/assets/app.bundle.js': 'assets/app.bundle.js'})
     eleventyConfig.addPassthroughCopy({'demo/src/assets/webawesome.css': 'assets/webawesome.css'})
+    eleventyConfig.addPassthroughCopy({'demo/icons': 'icons'})
     return {
         dir: {input: 'demo/src', output: 'demo/dist'},
         templateFormats: ['njk'],

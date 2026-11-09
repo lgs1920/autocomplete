@@ -27,7 +27,9 @@ const demoRoot = resolve(import.meta.dir, '../demo/dist')
  */
 const serveFile = async request => {
     const pathname = decodeURIComponent(new URL(request.url).pathname)
-    const relativePath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '')
+    let relativePath = pathname.replace(/^\/+/, '')
+    if (pathname === '/') relativePath = 'index.html'
+    else if (pathname.endsWith('/')) relativePath += 'index.html'
     const filePath = resolve(demoRoot, relativePath)
     if (filePath !== demoRoot && !filePath.startsWith(`${demoRoot}${sep}`)) {
         return new Response('Not found', {status: 404})

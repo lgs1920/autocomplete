@@ -1,10 +1,11 @@
 <!doctype html>
-<html lang="en" class="wa-theme-default wa-palette-default wa-brand-blue wa-light">
+<html lang="en" class="wa-theme-default wa-palette-default wa-brand-cyan wa-light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Properties, events, and option format for @lgs1920/autocomplete.">
     <title>@lgs1920/autocomplete · Options and API</title>
+    {% include "theme-bootstrap.njk" %}
     <link rel="stylesheet" href="../assets/webawesome.css">
     <link rel="stylesheet" href="../assets/styles.css">
 </head>
@@ -17,112 +18,215 @@
         <a href="https://github.com/lgs1920/autocomplete">GitHub</a>
         <a href="https://www.npmjs.com/package/@lgs1920/autocomplete">npm</a>
     </div>
+    {% include "theme-controls.njk" %}
 </nav>
 
 <main>
     <header class="page-heading">
         <p class="eyebrow">Component reference</p>
-        <h1>Options and events</h1>
-        <p class="intro">The host provides the data and receives a selected option. The element owns the query, active suggestion, popup, and request lifecycle.</p>
+        <h1>Options and API</h1>
+        <p class="intro">Reference for option data, configuration, events, and keyboard behavior.</p>
     </header>
 
     <section class="content-card" aria-labelledby="option-shape-heading">
         <h2 id="option-shape-heading">Option shape</h2>
-        <p>Every option needs a string or numeric <code>value</code> (or <code>valeur</code>) and a string <code>label</code>. Optional <code>icon</code> values use a Web Awesome icon name or an icon descriptor. Extra properties such as <code>variable</code> pass through unchanged as host metadata.</p>
-        <pre><code>{
-  value: 'troyes',
-  label: 'Troyes',
-  icon: 'location-dot',
-  department: '10',
-  region: 'Grand Est'
+        <p>Every option needs a string or numeric <code>value</code> (or <code>valeur</code>) and a string <code>label</code>. Optional <code>icon</code> values accept Web Awesome icon names or descriptors in the form <code>{name, family?, variant?}</code>, SVG/PNG URL strings, or image descriptors in the form <code>{src, fallback?}</code>. The fallback text appears if the image cannot load. Other properties, such as <code>department</code> and <code>region</code>, are preserved as option metadata.</p>
+        <pre data-language="JSON"><code>{
+  <span class="token-property">"value"</span>: <span class="token-string">"paris"</span>,
+  <span class="token-property">"label"</span>: <span class="token-string">"Paris"</span>,
+  <span class="token-property">"icon"</span>: <span class="token-string">"location-dot"</span>,
+  <span class="token-property">"department"</span>: <span class="token-string">"75"</span>,
+  <span class="token-property">"region"</span>: <span class="token-string">"Île-de-France"</span>
 }</code></pre>
     </section>
 
     <section class="content-card" aria-labelledby="properties-heading">
         <h2 id="properties-heading">Properties and attributes</h2>
-        <table>
-            <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
-            <tbody>
-                <tr><td><code>options</code></td><td>Option[] property</td><td><code>[]</code></td><td>Local suggestions. Matching checks <code>label</code> and <code>value</code>, without case sensitivity.</td></tr>
-                <tr><td><code>searchOptions</code></td><td>Function property</td><td><code>null</code></td><td>Async provider <code>(query, {signal}) =&gt; Promise&lt;Option[]&gt;</code>. Setting it enables remote search.</td></tr>
-                <tr><td><code>persistence</code></td><td><code>{id, limit}</code> property</td><td><code>null</code></td><td>Saves the last selected options in browser storage under an id-specific key and displays them when the query is empty. <code>count</code> aliases <code>limit</code>.</td></tr>
-                <tr><td><code>value</code></td><td>String or number property</td><td>Empty</td><td>Raw selected value. Setting it selects a matching item from the current local <code>options</code>.</td></tr>
-                <tr><td><code>query</code></td><td>Read-only string property</td><td>Empty</td><td>Current text in the input, including while the user is typing an unselected query.</td></tr>
-                <tr><td><code>selectedOption</code></td><td>Read-only property</td><td><code>null</code></td><td>The full selected object, including host-owned metadata.</td></tr>
-                <tr><td><code>focus()</code></td><td>Method</td><td>—</td><td>Focus the underlying Web Awesome input.</td></tr>
-                <tr><td><code>label</code></td><td>String attribute/property</td><td>Empty</td><td>Accessible visible label forwarded to <code>wa-input</code>.</td></tr>
-                <tr><td><code>placeholder</code></td><td>String attribute/property</td><td>Empty</td><td>Hint displayed while the query is empty.</td></tr>
-                <tr><td><code>name</code></td><td>String attribute</td><td>Empty</td><td>Form field name for the selected raw value.</td></tr>
-                <tr><td><code>disabled</code></td><td>Boolean attribute/property</td><td>False</td><td>Disables the input and excludes its value from form submission.</td></tr>
-                <tr><td><code>icon-position</code></td><td><code>start</code> or <code>end</code></td><td><code>start</code></td><td>Places each option icon before or after its label.</td></tr>
-                <tr><td><code>min-chars</code></td><td>Number attribute/property</td><td><code>0</code></td><td>Minimum query length before invoking the async provider.</td></tr>
-                <tr><td><code>debounce</code></td><td>Milliseconds attribute/property</td><td><code>150</code></td><td>Delay before invoking the async provider.</td></tr>
-            </tbody>
-        </table>
+        <p>Use the listed names as HTML attributes. In JavaScript, hyphenated attribute names become camel-case properties, such as <code>max-options-visible</code> and <code>maxOptionsVisible</code>.</p>
+        <div class="table-scroll table-scroll--wide" role="region" aria-label="Properties and attributes" tabindex="0">
+            <table>
+                <thead><tr><th>Name</th><th>Type</th><th>Default</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>options</code></td><td>Option[] property</td><td><code>[]</code></td><td>Local suggestions. Direct <code>wa-option</code> children provide initial choices; assigning this property replaces them and supports JavaScript-managed data. Matching checks <code>label</code> and <code>value</code>, without case sensitivity, and highlights matching text in labels. When recent suggestions are open, the disclosure chevron replaces them with the complete local list and points up. Activate it again to close the list. With an empty query and no recent suggestions, the chevron opens the full list directly. With <code>multiple</code>, options can be toggled without closing it.</td></tr>
+                    <tr><td><code>searchOptions</code></td><td>Function property</td><td><code>null</code></td><td>Async provider <code>(query, {signal}) =&gt; Promise&lt;Option[]&gt;</code>. Setting it enables remote search.</td></tr>
+                    <tr><td><code>persistence</code></td><td><code>{id?, group?, limit}</code> property</td><td><code>null</code></td><td>Requires an <code>id</code> or a <code>group</code>. Saves the last selected options under an id-specific key, or under a shared group key when <code>group</code> is set. Components with the same group share their recent history. <code>count</code> aliases <code>limit</code>.</td></tr>
+                    <tr><td><code>value</code></td><td>String, number, or array property</td><td><code>''</code> or <code>[]</code></td><td>Raw selected value. With <code>multiple</code>, this is an array. Setting it selects matching options already available to the component; it does not start a remote search.</td></tr>
+                    <tr><td><code>query</code></td><td>Read-only string property</td><td><code>''</code></td><td>Current text in the input, including while the user is typing an unselected query.</td></tr>
+                    <tr><td><code>selectedOption</code></td><td>Read-only <code>Option</code> or <code>null</code> property</td><td><code>null</code></td><td>The selected object in single mode; use <code>selectedOptions</code> in multiple mode.</td></tr>
+                    <tr><td><code>selectedOptions</code></td><td>Read-only Option[] property</td><td><code>[]</code></td><td>All selected option objects, including host-owned metadata. In single mode it contains zero or one option.</td></tr>
+                    <tr><td><code>focus()</code></td><td>Method</td><td>—</td><td>Focus the underlying Web Awesome input.</td></tr>
+                    <tr><td><code>label</code></td><td>String attribute/property</td><td><code>''</code></td><td>Accessible visible label forwarded to <code>wa-input</code>.</td></tr>
+                    <tr><td><code>placeholder</code></td><td>String attribute/property</td><td><code>''</code></td><td>Hint displayed while the query is empty and, in multiple mode, no options are selected.</td></tr>
+                    <tr><td><code>name</code></td><td>String attribute/property</td><td><code>''</code></td><td>Form field name for selected values. Multiple selection submits repeated entries under this name.</td></tr>
+                    <tr><td><code>disabled</code></td><td>Boolean attribute/property</td><td><code>false</code></td><td>Disables the input and excludes its value from form submission.</td></tr>
+                    <tr><td><code>with-clear</code></td><td>Boolean attribute / <code>withClear</code> property</td><td><code>false</code></td><td>Adds an accessible query-clear control. In multiple mode, a separate button clears all selected tags.</td></tr>
+                    <tr><td><code>multiple</code></td><td>Boolean attribute/property</td><td><code>false</code></td><td>Allows several options to be selected. Choosing an option clears the query for the next choice and hides the placeholder while tags are selected. Values are submitted as repeated form entries under the same <code>name</code>.</td></tr>
+                    <tr><td><code>max-options-visible</code></td><td>Non-negative number attribute / <code>maxOptionsVisible</code> property</td><td><code>5</code></td><td>Maximum selected tags shown before a <code>+N</code> control opens the full selection list, paginated 10 items per page. Set to <code>0</code> to show every tag inline.</td></tr>
+                    <tr><td><code>size</code></td><td><code>xs</code>, <code>s</code>, <code>m</code>, <code>l</code>, <code>xl</code></td><td><code>m</code></td><td>Forwards the Web Awesome input size. The <code>small</code>, <code>medium</code>, and <code>large</code> aliases are also supported.</td></tr>
+                    <tr><td><code>appearance</code></td><td><code>filled</code>, <code>outlined</code>, or <code>filled-outlined</code></td><td><code>outlined</code></td><td>Forwards the Web Awesome input appearance.</td></tr>
+                    <tr><td><code>pill</code></td><td>Boolean attribute/property</td><td><code>false</code></td><td>Forwards pill-style rounding to the Web Awesome input.</td></tr>
+                    <tr><td><code>hint</code></td><td>String attribute/property</td><td><code>''</code></td><td>Forwards hint text to the Web Awesome input.</td></tr>
+                    <tr><td><code>readonly</code></td><td>Boolean attribute/property</td><td><code>false</code></td><td>Makes the query field read-only while keeping suggestions selectable.</td></tr>
+                    <tr><td><code>icon-position</code></td><td>Attribute / <code>iconPosition</code> property: <code>start</code> or <code>end</code></td><td><code>start</code></td><td>Places each option icon before or after its label in suggestions and, in multiple mode, selected tags.</td></tr>
+                    <tr><td><code>min-chars</code></td><td>Number attribute / <code>minChars</code> property</td><td><code>1</code></td><td>Minimum non-empty query length before invoking the async provider. Set to <code>0</code> to allow any non-empty query; an empty query never invokes the provider.</td></tr>
+                    <tr><td><code>debounce</code></td><td>Milliseconds attribute/property</td><td><code>150</code></td><td>Wait after the latest keystroke before invoking the async provider. New input restarts the delay and aborts any stale request.</td></tr>
+                    <tr><td><code>page-size</code></td><td>Positive number attribute / <code>pageSize</code> property</td><td><code>10</code></td><td>Suggestions shown per page. Pagination shows the displayed result range and page controls when more than one page is available.</td></tr>
+                    <tr><td><code>max-results</code></td><td>Positive number attribute / <code>maxResults</code> property</td><td><code>50</code></td><td>Maximum filtered local or remote results. Opening the complete local list from the disclosure chevron includes every option.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="content-card" aria-labelledby="icons-heading">
+        <h2 id="icons-heading">Option icons</h2>
+        <p>Set <code>icon</code> on each option to show an icon beside its label in suggestions and selected tags. The component accepts several icon sources; you can mix them in one options array. <code>icon-position="start"</code> places them before labels, and <code>icon-position="end"</code> places them after.</p>
+        <div class="table-scroll table-scroll--wide" role="region" aria-label="Icon formats" tabindex="0">
+            <table>
+                <thead><tr><th>Source</th><th>Option value</th><th>How it works</th></tr></thead>
+                <tbody>
+                    <tr><td>Web Awesome icon</td><td><code>icon: 'location-dot'</code></td><td>Uses the default Web Awesome icon library. A descriptor such as <code>{name: 'house', family: 'classic', variant: 'solid'}</code> sets the icon properties explicitly. See <a href="https://webawesome.com/docs/components/icon"><code>wa-icon</code></a>.</td></tr>
+                    <tr><td>Local SVG or PNG</td><td><code>icon: '/assets/icons/home.svg'</code></td><td>A string ending in <code>.svg</code> or <code>.png</code> is rendered as an image.</td></tr>
+                    <tr><td>Remote SVG or PNG</td><td><code>icon: 'https://flagcdn.io/fr.svg'</code></td><td>Pass the image URL directly when it ends in <code>.svg</code> or <code>.png</code>.</td></tr>
+                    <tr><td>Blob, data, or extensionless URL</td><td><code>icon: {src: imageUrl, fallback: '🇫🇷'}</code></td><td>Use an image descriptor when the URL has no file extension, or when you want fallback text if image loading fails.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>Here the options use different formats together. For a URL from a remote API, map its image URL to <code>{src}</code> and provide optional fallback text:</p>
+        <pre data-language="JavaScript"><code>field.options = [
+  {<span class="token-property">value</span>: <span class="token-string">'paris'</span>, <span class="token-property">label</span>: <span class="token-string">'Paris'</span>, <span class="token-property">icon</span>: <span class="token-string">'location-dot'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'home'</span>, <span class="token-property">label</span>: <span class="token-string">'Home'</span>, <span class="token-property">icon</span>: <span class="token-string">'/assets/icons/home.svg'</span>},
+  {<span class="token-property">value</span>: <span class="token-string">'france'</span>, <span class="token-property">label</span>: <span class="token-string">'France'</span>, <span class="token-property">icon</span>: {<span class="token-property">src</span>: <span class="token-string">'https://flagcdn.io/fr.svg'</span>, <span class="token-property">fallback</span>: <span class="token-string">'🇫🇷'</span>}},
+]
+
+field.searchOptions = <span class="token-keyword">async</span> (query, {signal}) <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">const</span> response = <span class="token-keyword">await</span> fetch(<span class="token-string">'/api/search?q='</span> + encodeURIComponent(query), {signal})
+  <span class="token-keyword">const</span> results = <span class="token-keyword">await</span> response.json()
+  <span class="token-keyword">return</span> results.map(item <span class="token-operator">=&gt;</span> ({
+    <span class="token-property">value</span>: item.id,
+    <span class="token-property">label</span>: item.name,
+    <span class="token-property">icon</span>: item.iconUrl
+      ? {<span class="token-property">src</span>: item.iconUrl, <span class="token-property">fallback</span>: item.iconEmoji}
+      : <span class="token-string">'location-dot'</span>,
+  }))
+}</code></pre>
+        <p>For files bundled by Vite, <a href="https://vite.dev/guide/features#glob-import">Vite glob imports</a> resolve SVG/PNG files to URLs. The autocomplete component itself does not depend on Vite.</p>
+        <pre data-language="JavaScript"><code><span class="token-keyword">const</span> iconUrls = import.meta.glob(<span class="token-string">'./icons/*.{svg,png}'</span>, {
+  <span class="token-property">eager</span>: <span class="token-literal">true</span>,
+  <span class="token-property">import</span>: <span class="token-string">'default'</span>,
+  <span class="token-property">query</span>: <span class="token-string">'?url'</span>,
+})
+field.options = Object.entries(iconUrls).map(([path, src]) <span class="token-operator">=&gt;</span> ({
+  <span class="token-property">value</span>: path,
+  <span class="token-property">label</span>: path.split(<span class="token-string">'/'</span>).pop(),
+  <span class="token-property">icon</span>: {<span class="token-property">src</span>},
+}))</code></pre>
+    </section>
+
+    <section class="content-card" aria-labelledby="slots-heading">
+        <h2 id="slots-heading">Input slots</h2>
+        <p>Use the <code>start</code> and <code>end</code> slots for fixed content inside the input, such as a search icon. Slots decorate the input; they do not set icons for individual suggestions. For those, use the option's <code>icon</code> property. The disclosure button remains in the end area.</p>
+        <pre data-language="HTML"><code><span class="token-punctuation">&lt;</span><span class="token-tag">lgs1920-autocomplete</span> <span class="token-attribute">label</span>=<span class="token-attribute-value">"City"</span> <span class="token-attribute">placeholder</span>=<span class="token-attribute-value">"Search cities"</span><span class="token-punctuation">&gt;</span>
+    <span class="token-punctuation">&lt;</span><span class="token-tag">wa-icon</span> <span class="token-attribute">slot</span>=<span class="token-attribute-value">"start"</span> <span class="token-attribute">name</span>=<span class="token-attribute-value">"magnifying-glass"</span> <span class="token-attribute">aria-hidden</span>=<span class="token-attribute-value">"true"</span><span class="token-punctuation">&gt;&lt;/</span><span class="token-tag">wa-icon</span><span class="token-punctuation">&gt;</span>
+<span class="token-punctuation">&lt;/</span><span class="token-tag">lgs1920-autocomplete</span><span class="token-punctuation">&gt;</span></code></pre>
     </section>
 
     <section class="content-card" aria-labelledby="persistence-heading">
         <h2 id="persistence-heading">Recent selections</h2>
-        <p>Use a stable, unique id for each independent history. The browser stores selected option objects as JSON in <code>localStorage</code>, and shows the last selected items whenever the query is empty. Only a user selection updates the history.</p>
-        <pre><code>field.persistence = {id: 'city-search', limit: 5}
+        <p>Use a stable, unique id for an independent history, or set the same group on multiple components to share recent selections. The browser stores selected option objects as JSON in <code>localStorage</code>, and shows the last selected items when the query is empty. With no recent selections, the panel stays closed instead of listing every option. Only a user selection updates the history.</p>
+        <pre data-language="JavaScript"><code>field.persistence = {<span class="token-property">id</span>: <span class="token-string">'city-search'</span>, <span class="token-property">limit</span>: <span class="token-number">5</span>}
 
-// The count alias is also accepted:
-field.persistence = {id: 'city-search', count: 5}</code></pre>
-        <p>Changing the id loads a separate history. Reducing the limit removes older entries; raising it later cannot restore removed entries. Browser storage or JSON serialization failures emit <code>wa-persistence-error</code> with <code>{error, action, id}</code>.</p>
+firstField.persistence = {<span class="token-property">group</span>: <span class="token-string">'location-search'</span>, <span class="token-property">limit</span>: <span class="token-number">5</span>}
+secondField.persistence = {<span class="token-property">group</span>: <span class="token-string">'location-search'</span>, <span class="token-property">limit</span>: <span class="token-number">5</span>}
+
+<span class="token-comment">// The count alias is also accepted:</span>
+field.persistence = {<span class="token-property">id</span>: <span class="token-string">'city-search'</span>, <span class="token-property">count</span>: <span class="token-number">5</span>}</code></pre>
+        <p>Changing the id when no group is set, or changing the group, loads a separate history. When both are set, group determines the shared history. Reducing the limit removes older entries; raising it later cannot restore removed entries. Browser storage or JSON serialization failures emit <code>wa-persistence-error</code> with <code>{error, action, id, group?}</code>.</p>
     </section>
 
     <section class="content-card" aria-labelledby="styling-heading">
         <h2 id="styling-heading">Styling</h2>
-        <table>
-            <thead><tr><th>CSS custom property</th><th>Default</th><th>Description</th></tr></thead>
-            <tbody>
-                <tr><td><code>--lgs1920-autocomplete-max-height</code></td><td><code>16rem</code></td><td>Maximum height of the suggestion panel.</td></tr>
-            </tbody>
-        </table>
-        <p>The component uses Web Awesome palette and spacing tokens so its input and suggestions follow the active theme.</p>
+        <div class="table-scroll table-scroll--wide" role="region" aria-label="Styling variables" tabindex="0">
+            <table>
+                <thead><tr><th>CSS custom property</th><th>Default</th><th>Description</th></tr></thead>
+                <tbody>
+                    <tr><td><code>--lgs1920-autocomplete-max-height</code></td><td><code>16rem</code></td><td>Maximum height of the suggestion panel.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-placeholder-color</code></td><td><code>var(--wa-color-text-quiet)</code></td><td>Input placeholder color.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-panel-background</code></td><td><code>var(--wa-color-surface-raised)</code></td><td>Suggestion and selected-options panel background.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-panel-color</code></td><td><code>var(--wa-color-text-normal)</code></td><td>Suggestion and selected-options panel text color.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-panel-border-color</code></td><td><code>var(--wa-color-surface-border)</code></td><td>Suggestion and selected-options panel border color.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-option-color</code></td><td><code>var(--wa-color-text-normal)</code></td><td>Option text color.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-option-icon-color</code></td><td><code>var(--wa-color-text-quiet)</code></td><td>Option icon color.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-option-active-background</code></td><td><code>var(--wa-color-neutral-fill-quiet)</code></td><td>Keyboard-active option background.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-option-hover-background</code></td><td><code>var(--wa-color-neutral-fill-quiet)</code></td><td>Pointer-hover option background.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-option-selected-background</code></td><td><code>var(--wa-color-brand-fill-quiet)</code></td><td>Selected option background.</td></tr>
+                    <tr><td><code>--lgs1920-autocomplete-option-selected-color</code></td><td><code>var(--wa-color-brand-on-quiet)</code></td><td>Selected option text color.</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <p>The component follows the active Web Awesome theme by default. Blend an accent token with the active surface to tint individual states while preserving light and dark themes.</p>
+        <pre data-language="CSS"><code>lgs1920-autocomplete {
+    /* Keep the suggestion panel on the active theme surface. */
+    --lgs1920-autocomplete-panel-background: color-mix(in srgb, var(--wa-color-surface-raised) 88%, var(--wa-color-purple) 12%);
+    /* Follow the active theme's foreground color. */
+    --lgs1920-autocomplete-panel-color: var(--wa-color-text-normal);
+    /* Tint hovered options without replacing the theme surface. */
+    --lgs1920-autocomplete-option-hover-background: color-mix(in srgb, var(--wa-color-surface-raised) 86%, var(--wa-color-purple) 14%);
+    /* Keep selected text readable on the tinted surface. */
+    --lgs1920-autocomplete-option-selected-background: color-mix(in srgb, var(--wa-color-surface-raised) 68%, var(--wa-color-purple) 32%);
+    /* Follow the active theme's foreground color. */
+    --lgs1920-autocomplete-option-selected-color: var(--wa-color-text-normal);
+}</code></pre>
     </section>
 
     <section class="content-card" aria-labelledby="remote-heading">
         <h2 id="remote-heading">Remote API example</h2>
         <p>The callback receives an abort signal. Forward it to <code>fetch</code> so the browser can stop obsolete requests as the query changes.</p>
-        <pre><code>field.searchOptions = async (query, {signal}) =&gt; {
-  const response = await fetch(`/api/cities?q=${encodeURIComponent(query)}`, {signal})
-  if (!response.ok) throw new Error('City search failed')
-  return response.json()
+        <pre data-language="JavaScript"><code>field.searchOptions = <span class="token-keyword">async</span> (query, {signal}) <span class="token-operator">=&gt;</span> {
+  <span class="token-keyword">const</span> response = <span class="token-keyword">await</span> fetch(<span class="token-string">`/api/cities?q=${encodeURIComponent(query)}`</span>, {signal})
+  <span class="token-keyword">if</span> (!response.ok) <span class="token-keyword">throw</span> <span class="token-keyword">new</span> Error(<span class="token-string">'City search failed'</span>)
+  <span class="token-keyword">return</span> response.json()
 }</code></pre>
-        <p>The endpoint should return an array in the documented option shape. A failed request shows a status message and emits <code>wa-search-error</code>. The selected raw value participates in form submission and is cleared when the owning form resets.</p>
+        <p>The endpoint should return an array in the documented option shape. The live city example uses <a href="https://photon.komoot.io/">Photon</a>, filters results to cities, and maps each result to a stable OpenStreetMap identifier plus its coordinates and country metadata. Photon’s public demo server is intended for reasonable request volumes and does not provide an availability guarantee. A failed request shows a status message and emits <code>wa-search-error</code>. The selected value participates in form submission and is cleared when the owning form resets.</p>
     </section>
 
     <section class="content-card" aria-labelledby="events-heading">
         <h2 id="events-heading">Events</h2>
-        <table>
-            <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
-            <tbody>
-                <tr><td><code>input</code></td><td>Native Web Awesome event</td><td>Whenever the user edits the query. Read its text from <code>event.target.query</code>.</td></tr>
-                <tr><td><code>change</code></td><td>Native Web Awesome event</td><td>When the user commits input or selects a suggestion. Read the raw selected value from <code>event.target.value</code>.</td></tr>
-                <tr><td><code>focus</code> / <code>blur</code></td><td>Native Web Awesome events</td><td>When the underlying input receives or loses focus.</td></tr>
-                <tr><td><code>wa-select</code></td><td><code>{option, value, label}</code></td><td>After a suggestion is selected.</td></tr>
-                <tr><td><code>wa-search-error</code></td><td><code>{error, query}</code></td><td>When a current async search fails.</td></tr>
-                <tr><td><code>wa-persistence-error</code></td><td><code>{error, action, id}</code></td><td>When browser storage cannot be read or written.</td></tr>
-            </tbody>
-        </table>
+        <div class="table-scroll table-scroll--wide" role="region" aria-label="Component events" tabindex="0">
+            <table>
+                <thead><tr><th>Event</th><th>Detail</th><th>When</th></tr></thead>
+                <tbody>
+                    <tr><td><code>input</code></td><td>Standard component event</td><td>Whenever the user edits the query. Read its text from <code>event.target.query</code>.</td></tr>
+                    <tr><td><code>change</code></td><td>Standard component event</td><td>When the selected value changes or the input value is committed. Read the selected value from <code>event.target.value</code>.</td></tr>
+                    <tr><td><code>focus</code> / <code>blur</code></td><td>Standard component events</td><td>When the underlying input receives or loses focus.</td></tr>
+                    <tr><td><code>wa-clear</code></td><td>Custom component event</td><td>When the query-clear or clear-all control is activated.</td></tr>
+                    <tr><td><code>wa-select</code></td><td><code>{option, value, label, selectedOptions}</code></td><td>After a suggestion is selected. In multiple mode, <code>value</code> is an array.</td></tr>
+                    <tr><td><code>wa-deselect</code></td><td><code>{option, value, label, selectedOptions}</code></td><td>When a selected option is toggled off in multiple mode.</td></tr>
+                    <tr><td><code>wa-search-error</code></td><td><code>{error, query}</code></td><td>When a current async search fails.</td></tr>
+                    <tr><td><code>wa-persistence-error</code></td><td><code>{error, action, id, group?}</code></td><td>When browser storage cannot be read or written. For a group-only configuration, <code>id</code> contains the group name.</td></tr>
+                </tbody>
+            </table>
+        </div>
     </section>
 
     <section class="content-card" aria-labelledby="keyboard-heading">
         <h2 id="keyboard-heading">Keyboard and accessibility</h2>
-        <table>
-            <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
-            <tbody>
-                <tr><td>Arrow Down / Arrow Up</td><td>Move the active suggestion, wrapping at either end.</td></tr>
-                <tr><td>Home / End</td><td>Move to the first or last visible suggestion.</td></tr>
-                <tr><td>Enter</td><td>Select the active suggestion.</td></tr>
-                <tr><td>Escape</td><td>Close the suggestion panel.</td></tr>
-                <tr><td>Tab</td><td>Continue normal focus navigation; the panel closes when focus leaves.</td></tr>
-            </tbody>
-        </table>
+        <div class="table-scroll" role="region" aria-label="Keyboard behavior" tabindex="0">
+            <table>
+                <thead><tr><th>Key</th><th>Behavior</th></tr></thead>
+                <tbody>
+                    <tr><td>Arrow Down / Arrow Up</td><td>Move the active suggestion, wrapping at either end.</td></tr>
+                    <tr><td>Home / End</td><td>Move to the first or last result, changing pages if needed.</td></tr>
+                    <tr><td>Enter</td><td>Select the active suggestion.</td></tr>
+                    <tr><td>Enter / Space on <code>+N</code></td><td>Open the expanded selected-options list.</td></tr>
+                    <tr><td>Escape</td><td>Close the open suggestion or selected-options panel.</td></tr>
+                    <tr><td>Tab</td><td>Continue normal focus navigation; the panel closes when focus leaves.</td></tr>
+                </tbody>
+            </table>
+        </div>
     </section>
 </main>
 
-<footer class="site-footer"><a href="../">Back to examples</a> · LGS1920 · MIT licensed</footer>
+<footer class="site-footer"><a href="../">Back to examples</a> · LGS1920 · MIT licensed · Location search by <a href="https://photon.komoot.io/">Photon</a> · Country data and flags by <a href="https://countries.dev/">countries.dev</a> · Data © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> (ODbL)</footer>
+<script type="module" src="../assets/app.bundle.js"></script>
 </body>
 </html>
