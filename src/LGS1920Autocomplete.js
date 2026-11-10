@@ -23,6 +23,7 @@ import '@awesome.me/webawesome/dist/components/pagination/pagination.js'
 import '@awesome.me/webawesome/dist/components/popup/popup.js'
 import '@awesome.me/webawesome/dist/components/tag/tag.js'
 import autocompleteStyles from './autocomplete.css?inline'
+import {findOptionTemplateById, interpolateOptionTemplateText} from './option-template.js'
 import {readOptionsFromMarkup} from './options-from-markup.js'
 
 /**
@@ -42,6 +43,10 @@ import {readOptionsFromMarkup} from './options-from-markup.js'
  * @typedef {(option: AutocompleteOption, context: {query: string}) => Node} AutocompleteOptionRenderer
  */
 
+/**
+ * @typedef {HTMLTemplateElement} AutocompleteOptionTemplate
+ */
+
 let nextInstanceId = 0
 const selectedOptionsPageSize = 10
 
@@ -52,6 +57,23 @@ const selectedOptionsPageSize = 10
  * @returns {boolean} Whether the string has an SVG or PNG file extension.
  */
 const isImageIconSource = value => /\.(?:svg|png)(?:[?#].*)?$/i.test(value)
+
+/**
+ * Clone a template and interpolate placeholders in text nodes as plain text.
+ *
+ * @param {AutocompleteOptionTemplate} template - Template to clone.
+ * @param {AutocompleteOption} option - Option values for placeholders.
+ * @param {Document} document - Document that owns the rendered suggestions.
+ * @returns {DocumentFragment} Interpolated, safe DOM content.
+ */
+const renderOptionTemplate = (template, option, document) => {
+    const fragment = document.importNode(template.content, true)
+    const walker = document.createTreeWalker(fragment, document.defaultView.NodeFilter.SHOW_TEXT)
+    while (walker.nextNode()) {
+        walker.currentNode.textContent = interpolateOptionTemplateText(walker.currentNode.textContent ?? '', option)
+    }
+    return fragment
+}
 
 /**
  * Validate and copy options without dropping host-owned metadata.
@@ -108,7 +130,7 @@ const getSearchText = option => `${option.label} ${option.value}`.toLocaleLowerC
  */
 export class LGS1920Autocomplete extends HTMLElement {
     static formAssociated = true
-    static observedAttributes = ['label', 'placeholder', 'name', 'disabled', 'icon-position', 'min-chars', 'debounce', 'with-clear', 'size', 'appearance', 'pill', 'hint', 'readonly', 'page-size', 'max-results', 'multiple', 'max-options-visible']
+    static observedAttributes = ['label', 'placeholder', 'name', 'disabled', 'icon-position', 'min-chars', 'debounce', 'with-clear', 'size', 'appearance', 'pill', 'hint', 'readonly', 'page-size', 'max-results', 'multiple', 'max-options-visible', 'option-template']
 
     #input
     #disclosureButton
@@ -141,6 +163,7 @@ export class LGS1920Autocomplete extends HTMLElement {
     #selectedPage = 1
     #searchOptions = null
     #renderOption = null
+    #optionTemplate = null
     #timer = 0
     #controller = null
     #requestSequence = 0
@@ -486,6 +509,7 @@ export class LGS1920Autocomplete extends HTMLElement {
      */
     attributeChangedCallback(name, oldValue, newValue) {
         if (!this.#input) return
+        if (name === 'option-template') this.#syncOptionTemplateAttribute(newValue)
         if (name === 'disabled' && oldValue !== newValue && newValue !== null) {
             this.#cancelSearch()
             this.#close()
@@ -571,7 +595,9 @@ export class LGS1920Autocomplete extends HTMLElement {
         if (renderer !== null && typeof renderer !== 'function') {
             throw new TypeError('renderOption must be a function or null')
         }
+        this.removeAttribute('option-template')
         this.#renderOption = renderer
+        this.#optionTemplate = null
         if (this.#results.length) this.#renderOptions()
     }
 
@@ -582,6 +608,47 @@ export class LGS1920Autocomplete extends HTMLElement {
      */
     get renderOption() {
         return this.#renderOption
+    }
+
+    /**
+     * Set an HTML template for suggestion content. Text-node placeholders use `{{field}}` syntax.
+     *
+     * @param {AutocompleteOptionTemplate|null} template - Template element, or null to restore default labels.
+     */
+    set optionTemplate(template) {
+        if (template !== null && (
+            template?.nodeType !== 1
+            || template.localName !== 'template'
+            || template.content?.nodeType !== 11
+        )) {
+            throw new TypeError('optionTemplate must be an HTML template element or null')
+        }
+        this.removeAttribute('option-template')
+        this.#optionTemplate = template
+        this.#renderOption = null
+        if (this.#results.length) this.#renderOptions()
+    }
+
+    /**
+     * Get the current HTML suggestion template.
+     *
+     * @returns {AutocompleteOptionTemplate|null} Current suggestion template.
+     */
+    get optionTemplate() {
+        return this.#optionTemplate
+    }
+
+    /** Resolve the declarative template ID and update the active option renderer. */
+    #syncOptionTemplateAttribute(templateId) {
+        const id = templateId?.trim()
+        const template = findOptionTemplateById(this.ownerDocument, id)
+        this.#renderOption = null
+        this.#optionTemplate = template
+        if (id && !this.#optionTemplate) {
+            const error = new TypeError(`option-template must reference an HTML template element with id "${id}"`)
+            this.#dispatch('wa-option-template-error', {error, templateId: id})
+        }
+        if (this.#results.length) this.#renderOptions()
     }
 
     /**
@@ -1328,6 +1395,7 @@ export class LGS1920Autocomplete extends HTMLElement {
         this.#pagination.page = this.#page
 
         const pageOffset = (this.#page - 1) * this.pageSize
+        const reserveIconSlot = this.#results.some(option => Boolean(option.icon))
         this.#results.slice(pageOffset, pageOffset + this.pageSize).forEach((option, pageIndex) => {
             const index = pageOffset + pageIndex
             const element = document.createElement('wa-option')
@@ -1341,16 +1409,25 @@ export class LGS1920Autocomplete extends HTMLElement {
             element.current = index === this.#activeIndex
 
             const icon = this.#createIcon(option.icon)
-            if (icon) icon.slot = this.iconPosition
+            const iconSlot = icon ?? (reserveIconSlot ? document.createElement('span') : null)
+            if (iconSlot && !icon) {
+                iconSlot.className = 'option-icon option-icon-placeholder'
+                iconSlot.setAttribute('aria-hidden', 'true')
+            }
+            if (iconSlot) iconSlot.slot = this.iconPosition
             let content = null
-            if (this.#renderOption) {
+            if (this.#renderOption || this.#optionTemplate) {
                 try {
-                    content = this.#renderOption(option, {
-                        query: this.#showAllOptions ? '' : (this.#input.value ?? '').trim(),
-                    })
+                    if (this.#renderOption) {
+                        content = this.#renderOption(option, {
+                            query: this.#showAllOptions ? '' : (this.#input.value ?? '').trim(),
+                        })
+                    } else {
+                        content = renderOptionTemplate(this.#optionTemplate, option, this.ownerDocument)
+                    }
                     const NodeConstructor = this.ownerDocument.defaultView?.Node
                     if (!NodeConstructor || !(content instanceof NodeConstructor)) {
-                        throw new TypeError('renderOption must return a DOM Node')
+                        throw new TypeError('Custom option content must produce a DOM Node')
                     }
                 } catch (error) {
                     content = null
@@ -1361,13 +1438,13 @@ export class LGS1920Autocomplete extends HTMLElement {
             if (content) {
                 element.classList.add('option-custom')
                 element.setAttribute('aria-label', option.label)
-                if (icon && this.iconPosition === 'start') element.append(icon)
+                if (iconSlot && this.iconPosition === 'start') element.append(iconSlot)
                 element.append(content)
-                if (icon && this.iconPosition === 'end') element.append(icon)
+                if (iconSlot && this.iconPosition === 'end') element.append(iconSlot)
             } else {
-                if (icon && this.iconPosition === 'start') element.append(icon)
+                if (iconSlot && this.iconPosition === 'start') element.append(iconSlot)
                 this.#renderHighlightedLabel(element, option.label)
-                if (icon && this.iconPosition === 'end') element.append(icon)
+                if (iconSlot && this.iconPosition === 'end') element.append(iconSlot)
             }
             this.#listbox.append(element)
             element.setAttribute('aria-selected', String(this.#isSelected(option)))

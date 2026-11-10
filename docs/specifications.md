@@ -69,6 +69,27 @@ field.renderOption = option => {
 }
 ```
 
+For markup-based layouts, use an HTML `<template>` element. It replaces the default label rendering and query highlighting; `option.label` still controls matching, selected input text, and the accessible name, while option icons still follow `icon-position`. Put `{{field}}` placeholders in text nodes; dot-separated paths such as `{{address.city}}` are supported. Interpolated values are inserted as plain text. Missing or non-primitive values become empty strings, and placeholders inside attributes are left unchanged. Setting `optionTemplate` clears `renderOption`, and setting `renderOption` clears `optionTemplate`. The `option-template` attribute selects a template by its ID in the same document; declare the template before the autocomplete element. For runtime selection, assign the template element to `field.optionTemplate` instead. An invalid ID emits `wa-option-template-error` and falls back to the default label.
+
+```html
+<template id="city-option-template">
+  <wa-card appearance="outlined">
+    <strong>{{city}}</strong>
+    <small>{{region}} · {{country}}</small>
+  </wa-card>
+</template>
+
+<lgs1920-autocomplete id="templated-city-search" label="City" option-template="city-option-template"></lgs1920-autocomplete>
+```
+
+```js
+const field = document.querySelector('#templated-city-search')
+field.options = [
+  {value: 'paris', label: 'Paris', city: 'Paris', region: 'Île-de-France', country: 'France'},
+  {value: 'reims', label: 'Reims', city: 'Reims', region: 'Grand Est', country: 'France'},
+]
+```
+
 For a remote search, map the API's image field to an image descriptor. Fallback text is optional:
 
 ```js
@@ -126,7 +147,7 @@ The component uses a Web Awesome input for its label and query. As a form-associ
 
 With `multiple`, `value` is an array and each selected value is submitted under the same `name`. Typing keeps existing selections. Adding an option clears the current query and keeps the panel open. Local search shows the complete list; remote search keeps its current results available until the next query. The placeholder is hidden until all tags are removed. Five selected tags are shown inline by default. The `+N` control opens the full selection list, 10 items per page. Set `max-options-visible` to change the inline limit, or to `0` to show every tag inline.
 
-`selectedOptions` returns the selected option objects. Selected items appear as removable `<wa-tag>` elements. If an option has an icon, `icon-position` places it before or after its label in suggestions and selected tags.
+`selectedOptions` returns the selected option objects. Selected items appear as removable `<wa-tag>` elements. If an option has an icon, `icon-position` places it before or after its label in suggestions and selected tags. In mixed suggestion lists, options without icons reserve the same slot so all labels stay aligned; lists without icons take no extra space.
 
 The `with-clear` attribute adds an accessible query-clear button. In multiple mode, a separate clear-all button removes every selected tag.
 

@@ -328,6 +328,10 @@
     color: var(--lgs1920-autocomplete-option-icon-color, var(--wa-color-text-quiet));
 }
 
+.option-icon-placeholder {
+    visibility: hidden;
+}
+
 .option-icon-image {
     object-fit: contain;
 }

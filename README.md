@@ -82,6 +82,29 @@ field.renderOption = option => {
 }
 ```
 
+For layouts that only need markup and field insertions, use an HTML `<template>`. It replaces the default label rendering and query highlighting; `option.label` still controls matching, selected input text, and the accessible name, while option icons still follow `icon-position`. Use `{{field}}` placeholders in text nodes; dot-separated paths such as `{{address.city}}` are supported. Values are inserted as plain text, and missing or non-primitive values become empty strings. Placeholders in attributes are left unchanged. Setting either `optionTemplate` or `renderOption` clears the other. The `option-template` attribute accepts the ID of a template in the same document; place the template before the autocomplete element. An invalid template ID emits `wa-option-template-error` and uses the default label rendering.
+
+```html
+<template id="city-option-template">
+  <wa-card appearance="outlined">
+    <strong>{{city}}</strong>
+    <small>{{region}} · {{country}}</small>
+  </wa-card>
+</template>
+
+<lgs1920-autocomplete id="templated-city-search" label="City" option-template="city-option-template"></lgs1920-autocomplete>
+```
+
+```js
+const field = document.querySelector('#templated-city-search')
+field.options = [
+  {value: 'paris', label: 'Paris', city: 'Paris', region: 'Île-de-France', country: 'France'},
+  {value: 'reims', label: 'Reims', city: 'Reims', region: 'Grand Est', country: 'France'},
+]
+```
+
+To select the template from JavaScript instead, set `field.optionTemplate = document.querySelector('#city-option-template')` and omit the `option-template` attribute.
+
 ### Remote search
 
 Assign an asynchronous `searchOptions(query, {signal})` function. It receives the current query and an `AbortSignal`, and must return an array of options. Searches start after one character by default and wait `150` milliseconds after the latest keystroke. Set `min-chars="0"` to allow any non-empty query length; the provider is never called for an empty query. New input restarts the delay and aborts stale requests.
@@ -115,6 +138,8 @@ Set `icon` on an option to show an icon beside its label in suggestions and sele
 - An image descriptor, `{src: imageUrl}`, for Blob URLs, data URLs, extensionless URLs, or a URL with fallback text: `{src: imageUrl, fallback: '🇫🇷'}`. Fallback text appears if the image fails to load.
 
 `icon-position="start|end"` places each option icon before or after its label. For a fixed icon inside the input, use the `start` or `end` slot instead; slots do not set suggestion icons.
+
+When the current results mix options with and without icons, suggestions without an icon reserve the same icon space so their labels stay aligned. Lists with no icons do not reserve extra space.
 
 ```js
 field.options = [
@@ -170,7 +195,7 @@ field.options = [{value: 'custom', label: 'Custom', icon: {src: blobUrl}}]
 
 Each option requires a string or numeric `value` and a string `label`. `valeur` is accepted as an alias for `value`. Additional properties, such as `department`, remain on the selected option and are included in selection events.
 
-The component exposes `value`, `query`, `selectedOption`, and `selectedOptions`. Read the typed text from `event.target.query`; use `selectedOption` for single selection and `selectedOptions` for multiple selection. `wa-select` fires when a suggestion is selected. In multiple mode, `wa-deselect` fires when an item is removed. Both events include the option metadata in `event.detail.option`. If `renderOption` throws or returns something other than a DOM node, `wa-option-render-error` includes `{error, option}` and the suggestion falls back to its default label.
+The component exposes `value`, `query`, `selectedOption`, and `selectedOptions`. Read the typed text from `event.target.query`; use `selectedOption` for single selection and `selectedOptions` for multiple selection. `wa-select` fires when a suggestion is selected. In multiple mode, `wa-deselect` fires when an item is removed. Both events include the option metadata in `event.detail.option`. If `renderOption` throws, returns something other than a DOM node, or `optionTemplate` cannot be rendered, `wa-option-render-error` includes `{error, option}` and the suggestion falls back to its default label.
 
 Standard `input`, `change`, `focus`, and `blur` events are available on the component. The `with-clear` attribute adds an accessible query-clear button; in multiple mode, a separate clear-all button removes selected tags. Activating either clear control emits `wa-clear`.
 
