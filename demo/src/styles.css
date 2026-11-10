@@ -205,6 +205,14 @@ h2 {
     margin-block-start: auto;
 }
 
+.template-city-card {
+    --spacing: var(--wa-space-xs);
+}
+
+.template-city-card small {
+    color: var(--wa-color-text-quiet);
+}
+
 .demo-card lgs1920-autocomplete {
     inline-size: 100%;
     min-inline-size: 0;

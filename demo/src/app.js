@@ -60,6 +60,7 @@ const fruitOptions = [
 ]
 
 const localAutocomplete = document.querySelector('#local-autocomplete')
+const templateAutocomplete = document.querySelector('#template-autocomplete')
 const brandColorAutocomplete = document.querySelector('#brand-color-autocomplete')
 const brandColorResponseDetails = document.querySelector('#brand-color-response-details')
 const remoteAutocomplete = document.querySelector('#remote-autocomplete')
@@ -90,6 +91,12 @@ const brandColorOptions = [
 
 localAutocomplete.options = fruitOptions
 localAutocomplete.persistence = {id: 'fruit-search-demo', limit: 3}
+templateAutocomplete.options = [
+    {value: 'paris', label: 'Paris', city: 'Paris', region: 'Île-de-France', country: 'France'},
+    {value: 'reims', label: 'Reims', city: 'Reims', region: 'Grand Est', country: 'France'},
+    {value: 'lyon', label: 'Lyon', city: 'Lyon', region: 'Auvergne-Rhône-Alpes', country: 'France'},
+    {value: 'montreal', label: 'Montréal', city: 'Montréal', region: 'Québec', country: 'Canada'},
+]
 brandColorAutocomplete.options = brandColorOptions
 brandColorAutocomplete.persistence = {id: 'brand-color-search-demo', limit: 3}
 
@@ -131,7 +138,6 @@ const searchCities = async (query, {signal}, maxResults = remoteAutocomplete.max
         return [{
             value: `${place.osm_type}/${place.osm_id}`,
             label: formatCityLabel(place),
-            icon: 'city',
             city: place.name,
             department: place.county,
             region: place.state,
@@ -382,6 +388,7 @@ const renderSelection = element => {
 
 for (const element of [
     localAutocomplete,
+    templateAutocomplete,
     brandColorAutocomplete,
     remoteAutocomplete,
     multipleAutocomplete,

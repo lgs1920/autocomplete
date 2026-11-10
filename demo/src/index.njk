@@ -111,6 +111,45 @@ field.addEventListener(<span class="token-string">'wa-select'</span>, event <spa
             </article>
 
             <article class="demo-card">
+                <p class="eyebrow">Local options · HTML template</p>
+                <h3>Render cities from a template</h3>
+                {% raw %}<template id="city-option-template">
+                    <wa-card class="template-city-card" appearance="outlined">
+                        <strong>{{city}}</strong>
+                        <small>{{region}} · {{country}}</small>
+                    </wa-card>
+                </template>{% endraw %}
+                <lgs1920-autocomplete id="template-autocomplete" label="City" name="templateCity" option-template="city-option-template" placeholder="Search Paris, Reims, Lyon…" with-clear></lgs1920-autocomplete>
+                <p class="section-intro">Type a city name to try the custom suggestion layout. Each option uses the HTML template below the field; select one to inspect its value and metadata.</p>
+                <wa-details summary="View response">
+                    <pre class="search-result" data-language="JSON" role="status" aria-live="polite"><code id="template-autocomplete-selection">Nothing selected</code></pre>
+                </wa-details>
+                <wa-button appearance="outlined" size="s" data-dialog="open template-example-dialog">View example code</wa-button>
+                <wa-dialog id="template-example-dialog" class="example-code-dialog" label="Example code: HTML option template" with-footer>
+                    <wa-copy-button slot="header-actions" copy-label="Copy code" success-label="Copied" error-label="Copy failed"></wa-copy-button>
+                    <p class="eyebrow">HTML</p>
+                    <pre data-language="HTML"><code>{% raw %}&lt;template id="city-option-template"&gt;
+  &lt;wa-card appearance="outlined"&gt;
+    &lt;strong&gt;{{city}}&lt;/strong&gt;
+    &lt;small&gt;{{region}} · {{country}}&lt;/small&gt;
+  &lt;/wa-card&gt;
+&lt;/template&gt;
+
+&lt;lgs1920-autocomplete id="template-autocomplete" label="City" name="templateCity" option-template="city-option-template"&gt;&lt;/lgs1920-autocomplete&gt;{% endraw %}</code></pre>
+                    <p class="eyebrow">JavaScript</p>
+                    <pre data-language="JavaScript"><code>const field = document.querySelector('#template-autocomplete')
+field.options = [
+  {value: 'paris', label: 'Paris', city: 'Paris', region: 'Île-de-France', country: 'France'},
+  {value: 'reims', label: 'Reims', city: 'Reims', region: 'Grand Est', country: 'France'},
+  {value: 'lyon', label: 'Lyon', city: 'Lyon', region: 'Auvergne-Rhône-Alpes', country: 'France'},
+]</code></pre>
+                    <footer slot="footer">
+                        <wa-button appearance="filled" size="s" data-dialog="close">Close</wa-button>
+                    </footer>
+                </wa-dialog>
+            </article>
+
+            <article class="demo-card">
                 <p class="eyebrow">Local options · Web Awesome brand colors</p>
                 <h3>Choose a brand color</h3>
                 <lgs1920-autocomplete id="brand-color-autocomplete" class="autocomplete-brand" label="Brand color" name="brandColor" size="s" appearance="filled-outlined" pill placeholder="Choose a brand color" with-clear>

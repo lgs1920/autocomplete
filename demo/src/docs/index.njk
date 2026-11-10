@@ -69,6 +69,7 @@ field.options = [
                 <tbody>
                     <tr><td><code>options</code></td><td>Option[] property</td><td><code>[]</code></td><td>Local suggestions. Direct <code>wa-option</code> children provide initial choices; assigning this property replaces them and supports JavaScript-managed data. Matching checks <code>label</code> and <code>value</code>, without case sensitivity, and highlights matching text in labels. When recent suggestions are open, the disclosure chevron replaces them with the complete local list and points up. Activate it again to close the list. With an empty query and no recent suggestions, the chevron opens the full list directly. With <code>multiple</code>, options can be toggled without closing it.</td></tr>
                     <tr><td><code>renderOption</code></td><td>Function property</td><td><code>null</code></td><td>Synchronous renderer <code>(option, {query}) =&gt; Node</code> for custom suggestion content. It replaces the default label rendering; <code>option.label</code> remains the search text, selected input text, and accessible name. Option icons still follow <code>icon-position</code>. Return a fresh, non-interactive DOM node for each suggestion; set to <code>null</code> to restore the default label view.</td></tr>
+                    <tr><td><code>optionTemplate</code> / <code>option-template</code></td><td>HTML template property / template ID attribute</td><td><code>null</code></td><td>Selects an HTML template for custom suggestion content, either by assigning the template element or its ID in the attribute. Declare the template before the autocomplete element. It replaces the default label rendering and query highlighting; <code>option.label</code> still controls matching, selected text, and the accessible name. Text-node placeholders use <code>{% raw %}{{field}}{% endraw %}</code> syntax and dot-separated paths; values are inserted as plain text. Setting either renderer clears the other.</td></tr>
                     <tr><td><code>searchOptions</code></td><td>Function property</td><td><code>null</code></td><td>Async provider <code>(query, {signal}) =&gt; Promise&lt;Option[]&gt;</code>. Setting it enables remote search.</td></tr>
                     <tr><td><code>persistence</code></td><td><code>{id?, group?, limit}</code> property</td><td><code>null</code></td><td>Requires an <code>id</code> or a <code>group</code>. Saves the last selected options under an id-specific key, or under a shared group key when <code>group</code> is set. Components with the same group share their recent history. <code>count</code> aliases <code>limit</code>.</td></tr>
                     <tr><td><code>value</code></td><td>String, number, or array property</td><td><code>''</code> or <code>[]</code></td><td>Raw selected value. With <code>multiple</code>, this is an array. Setting it selects matching options already available to the component; it does not start a remote search.</td></tr>
@@ -117,11 +118,25 @@ field.options = [
   }
   <span class="token-keyword">return</span> card
 }</code></pre>
+        <p>For layouts that only need markup and field insertions, use an HTML template. It replaces the default label rendering and query highlighting. Put <code>{% raw %}{{field}}{% endraw %}</code> placeholders in text nodes; dot-separated paths are supported, and values are inserted as plain text. Reference the template ID with <code>option-template</code>, or assign it through <code>field.optionTemplate</code> when configuring the field in JavaScript.</p>
+        <pre data-language="HTML"><code>{% raw %}&lt;template id="city-option-template"&gt;
+  &lt;wa-card appearance="outlined"&gt;
+    &lt;strong&gt;{{city}}&lt;/strong&gt;
+    &lt;small&gt;{{region}} · {{country}}&lt;/small&gt;
+  &lt;/wa-card&gt;
+&lt;/template&gt;
+
+&lt;lgs1920-autocomplete id="templated-city-search" label="City" option-template="city-option-template"&gt;&lt;/lgs1920-autocomplete&gt;{% endraw %}</code></pre>
+        <pre data-language="JavaScript"><code>const field = document.querySelector(<span class="token-string">'#templated-city-search'</span>)
+field.options = [
+  {value: <span class="token-string">'paris'</span>, label: <span class="token-string">'Paris'</span>, city: <span class="token-string">'Paris'</span>, region: <span class="token-string">'Île-de-France'</span>, country: <span class="token-string">'France'</span>},
+  {value: <span class="token-string">'reims'</span>, label: <span class="token-string">'Reims'</span>, city: <span class="token-string">'Reims'</span>, region: <span class="token-string">'Grand Est'</span>, country: <span class="token-string">'France'</span>},
+]</code></pre>
     </section>
 
     <section class="content-card" aria-labelledby="icons-heading">
         <h2 id="icons-heading">Option icons</h2>
-        <p>Set <code>icon</code> on each option to show an icon beside its label in suggestions and selected tags. The component accepts several icon sources; you can mix them in one options array. <code>icon-position="start"</code> places them before labels, and <code>icon-position="end"</code> places them after.</p>
+        <p>Set <code>icon</code> on each option to show an icon beside its label in suggestions and selected tags. The component accepts several icon sources; you can mix them in one options array. <code>icon-position="start"</code> places them before labels, and <code>icon-position="end"</code> places them after. In mixed suggestion lists, options without icons reserve the same slot to keep their labels aligned. Lists with no icons do not reserve extra space.</p>
         <div class="table-scroll table-scroll--wide" role="region" aria-label="Icon formats" tabindex="0">
             <table>
                 <thead><tr><th>Source</th><th>Option value</th><th>How it works</th></tr></thead>
@@ -244,7 +259,8 @@ field.persistence = {<span class="token-property">id</span>: <span class="token-
                     <tr><td><code>wa-select</code></td><td><code>{option, value, label, selectedOptions}</code></td><td>After a suggestion is selected. In multiple mode, <code>value</code> is an array.</td></tr>
                     <tr><td><code>wa-deselect</code></td><td><code>{option, value, label, selectedOptions}</code></td><td>When a selected option is toggled off in multiple mode.</td></tr>
                     <tr><td><code>wa-search-error</code></td><td><code>{error, query}</code></td><td>When a current async search fails.</td></tr>
-                    <tr><td><code>wa-option-render-error</code></td><td><code>{error, option}</code></td><td>When <code>renderOption</code> throws or does not return a DOM node. The default label view is used for that suggestion.</td></tr>
+                    <tr><td><code>wa-option-render-error</code></td><td><code>{error, option}</code></td><td>When <code>renderOption</code> throws, returns something other than a DOM node, or <code>optionTemplate</code> cannot be rendered. The default label view is used for that suggestion.</td></tr>
+                    <tr><td><code>wa-option-template-error</code></td><td><code>{error, templateId}</code></td><td>When the <code>option-template</code> attribute does not reference an HTML <code>&lt;template&gt;</code> element in the same document.</td></tr>
                     <tr><td><code>wa-persistence-error</code></td><td><code>{error, action, id, group?}</code></td><td>When browser storage cannot be read or written. For a group-only configuration, <code>id</code> contains the group name.</td></tr>
                 </tbody>
             </table>
