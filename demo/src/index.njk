@@ -11,7 +11,15 @@
 </head>
 <body>
 <nav class="site-banner" aria-label="Site navigation">
-    <a class="site-title" href="./">LGS1920 / autocomplete</a>
+    <div class="site-brand wa-cluster wa-gap-s wa-align-items-center">
+        <a id="lgs1920-logo-link" class="site-logo-link" href="https://lgs1920.fr/" aria-label="Visit lgs1920.fr">
+            {% include "lgs1920-logo.njk" %}
+        </a>
+        <span class="site-brand-copy wa-stack wa-gap-2xs">
+            <a class="site-title" href="./">autocomplete</a>
+            <h4 class="site-version">Version {{ packageVersion }}</h4>
+        </span>
+    </div>
     <div class="site-links">
         <a href="./" aria-current="page">Examples</a>
         <a href="./docs/">Options and API</a>
@@ -20,6 +28,7 @@
     </div>
     {% include "theme-controls.njk" %}
 </nav>
+<wa-tooltip for="lgs1920-logo-link">Visit lgs1920.fr</wa-tooltip>
 
 <main>
     <header class="page-heading page-heading--hero">

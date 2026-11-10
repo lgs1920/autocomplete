@@ -8,7 +8,7 @@
  * email: studio@lgs1920.fr
  *
  * Created on: 2026-11-08
- * Last modified: 2026-11-08
+ * Last modified: 2026-11-10
  *
  *
  * Copyright © 2026 LGS1920
@@ -21,6 +21,7 @@
  * @returns {object} Eleventy directory configuration.
  */
 const configureDemo = eleventyConfig => {
+    eleventyConfig.addGlobalData('packageVersion', require('./package.json').version)
     eleventyConfig.addPassthroughCopy({'demo/src/assets/styles.css': 'assets/styles.css'})
     eleventyConfig.addPassthroughCopy({'demo/src/assets/app.bundle.js': 'assets/app.bundle.js'})
     eleventyConfig.addPassthroughCopy({'demo/src/assets/webawesome.css': 'assets/webawesome.css'})
